@@ -1,0 +1,88 @@
+﻿@page "/Parametros/Extend"
+@using SmGenPar.Logic.Models
+@using System.Reflection
+@using static System.Runtime.InteropServices.CollectionsMarshal
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Rendering
+@using SmGenPar.Logic.Reflection
+@using SmGenPar.Wasm.HtmlBuilder
+
+<PageTitle>Parametrizacao do Extend</PageTitle>
+<EditForm Model="@Model" OnValidSubmit="@Submit">
+    <div>
+        @(Form<Extend>())
+    </div>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public static object? Model { get; set; } = new Extend();
+
+    static RenderFragment Form<TType>() => Form(typeof(TType));
+    static RenderFragment Form(Type type) => delegate(RenderTreeBuilder builder)
+    {
+        ReflectionVisitor.VisitProperties(type, propertyInfo =>
+        {
+            using var div = builder.OpenElement("div");
+            div.AddAttribute("class", "form-group");
+
+            ReflectionVisitor.VisitAttributes(propertyInfo, attributes =>
+            {
+                bool displayable = attributes.TryMatch(out DisplayAttribute? display_attribute);
+                bool editable = attributes.TryMatch(out EditableAttribute editable_attribute);
+                string display_name = display_attribute?.Name ?? propertyInfo.Name;
+
+                if (displayable && editable) {
+                    using (var label = builder.OpenElement("label")) {
+                        label.AddAttribute("for", propertyInfo.Name);
+                        label.AddContent(display_name);
+                    }
+
+                    if (propertyInfo.PropertyType.IsEnum) {
+                        using var select = builder.OpenElement("select");
+                        select.AddAttribute("oninput", (ChangeEventArgs changed) =>
+                        {
+                            object converted = Enum.Parse(propertyInfo.PropertyType, $"{changed.Value}")!;
+                            propertyInfo.SetValue(Model, converted);
+                        });
+
+                        string[] enum_names = HtmlBuilder.CachedEnumNames.GetValueRefOrCreate(propertyInfo.PropertyType, t => t.GetEnumNames())!;
+                        foreach (string name in enum_names) {
+                            using var option = select.AddElement("option");
+                            option.AddAttribute("value", name);
+                            option.AddContent(name);
+                        }
+                    }
+                    else {
+                        using var input = builder.OpenElement("input");
+                        input.AddInputType(propertyInfo.PropertyType);
+                        input.AddAttribute("id", propertyInfo.Name);
+
+                        input.AddAttribute("oninput", (ChangeEventArgs changed) =>
+                        {
+                            object converted = Convert.ChangeType(changed.Value, propertyInfo.PropertyType)!;
+                            propertyInfo.SetValue(Model, converted);
+                        });
+
+                        if (attributes.TryMatch(out RequiredAttribute _)) {
+                            input.AddAttribute("required", true);
+                        }
+                        if (editable_attribute.AllowEdit == false) {
+                            input.AddAttribute("disabled", true);
+                        }
+                    }
+                }
+                if (displayable && !editable) {
+                    using var label = builder.OpenElement("label");
+                    label.AddAttribute("for", propertyInfo.Name);
+                    label.AddContent(display_name);
+                }
+            });
+        });
+    };
+
+    void Submit()
+    {}
+}

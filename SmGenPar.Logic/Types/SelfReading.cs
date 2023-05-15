@@ -26,7 +26,7 @@ public static class SelfReadingExtensions
     }
     public static ConjuntoSelfRead ToConjuntosSelfRead(this IEnumerable<DateTime> dateTimes)
     {
-        var bcd_date_times = dateTimes.Select(FromDateTime).ToArray();
-        return ConjuntoSelfRead.CastFromDataTimes(bcd_date_times);
+        var bcdDateTimes = dateTimes.Select(FromDateTime).ToArray();
+        return ConjuntoSelfRead.CastFromDataTimes(bcdDateTimes);
     }
 }

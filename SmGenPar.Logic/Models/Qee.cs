@@ -1,15 +1,16 @@
-﻿using JetBrains.Annotations;
+﻿using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 
 namespace SmGenPar.Logic.Models;
 
 [PublicAPI]
 public class Qee
 {
-    [SerializeProperty(Name = "Tenção Nominal")]
-    
+    [Display(Name = "Tenção Nominal")]
+
     public float          TensaoNominal { get; set; }
     
-    [SerializeProperty(Name = "Tipo de Ligação")]
+    [Display(Name = "Tipo de Ligação")]
     public QeeTipoLigacao TipoLigacao   { get; set; }
 
     [PublicAPI]

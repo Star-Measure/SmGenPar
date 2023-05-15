@@ -47,21 +47,18 @@ public static class ReflectionVisitor
     public static void VisitProperties(Type type, Action<PropertyInfo> action)
     {
         var properties = Cached.PropertyInfo.GetValueOrCreate(type, t => t.GetProperties())!;
-        foreach (var property in properties) {
-            action(property);
+        var span       = properties.AsSpan();
 
-            if (property.PropertyType == type) {
-                continue;
-            }
-
-            VisitProperties(property.PropertyType, action);
+        foreach (var propertyInfo in span) {
+            action(propertyInfo);
         }
     }
 
     public static void VisitAttributes(PropertyInfo propertyInfo, Action<Attribute[]> action)
     {
-        var attributes = Cached.Attributes.GetValueRefOrCreate(propertyInfo, t => t.GetCustomAttributes().ToArray())!;
-
+        var attributes = Cached.Attributes.GetValueOrCreate(
+            propertyInfo, info => info.GetCustomAttributes().ToArray()
+            )!;
         action(attributes);
     }
 }

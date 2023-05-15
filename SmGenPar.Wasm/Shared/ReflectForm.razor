@@ -1,0 +1,148 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using System.Reflection
+@using System.Xml.Linq
+@using Microsoft.AspNetCore.Components.Rendering
+@using SmGenPar.Logic.Reflection
+@using SmGenPar.Wasm.HtmlBuilder
+
+@typeparam TType where TType : new()
+
+<EditForm Model="@(Parameters)" OnValidSubmit="@OnValidSubmit">
+    <div class="ParameterFrom">
+        @(Form(Parameters))
+    </div>
+    <button>Submit</button>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public Dictionary<string, object>? Parameters { get; set; }
+    
+    Type _type = typeof(TType);
+    
+    //TType model = new TType();
+    
+    RenderFragment Form(Dictionary<string, object>? props) => delegate(RenderTreeBuilder builder)
+    {
+        ReflectionVisitor.VisitProperties(
+            _type,
+            propInfo => AcceptProperties(propInfo, props)
+            );
+
+        void AcceptProperties(PropertyInfo propertyInfo, Dictionary<string, object>? props)
+        {
+            using var div = builder.OpenElement("div");
+            ReflectionVisitor.VisitAttributes(propertyInfo, AcceptAttributes);
+
+            void AcceptAttributes(Attribute[] attributes)
+            {
+                attributes.TryMatch(out DisplayAttribute? displayAttribute);
+                bool isDataType = attributes.TryMatch(out DataTypeAttribute? dataTypeAttribute);
+
+                string displayName = displayAttribute?.Name ?? propertyInfo.Name;
+
+                using (var label = builder.OpenElement("label")) {
+                    label.AddAttribute("for", propertyInfo.Name);
+                    label.AddContent(displayName);
+                }
+
+                if (propertyInfo.PropertyType.IsEnum) {
+                    using var select = builder.OpenElement("select");
+                    select.AddAttribute("oninput", (ChangeEventArgs changed) => { props[propertyInfo.Name] = changed.Value; });
+
+                    string[] enumNames = HtmlBuilder.CachedEnumNames.GetValueRefOrCreate(propertyInfo.PropertyType, t => t.GetEnumNames())!;
+                    foreach (string name in enumNames) {
+                        using var option = select.AddElement("option");
+                        option.AddAttribute("value", name);
+                        option.AddContent(name);
+                    }
+                }
+                else if (isDataType) {
+                    string inputType = dataTypeAttribute.DataType switch {
+                        DataType.Date => "date",
+                        DataType.DateTime => "datetime-local",
+                        DataType.Time => "time",
+                        _ => "text"
+                        };
+
+                    using var input = builder.OpenElement("input");
+                    input.AddAttribute("type", inputType);
+                    input.AddAttribute("id", propertyInfo.Name);
+
+                    input.AddAttribute(
+                        "oninput",
+                        (ChangeEventArgs changed) => { props[propertyInfo.Name] = changed.Value; });
+
+                    if (attributes.TryMatch(out RequiredAttribute _)) {
+                        input.AddAttribute("required", true);
+                    }
+                }
+                else if (propertyInfo.PropertyType.IsPrimitive || propertyInfo.PropertyType == typeof(string)) {
+                    using var input = builder.OpenElement("input");
+                    input.AddInputType(propertyInfo.PropertyType);
+                    input.AddAttribute("id", propertyInfo.Name);
+                    
+                    input.AddAttribute(
+                        "oninput",
+                        (ChangeEventArgs changed) => { props[propertyInfo.Name] = changed.Value; });
+
+                    // using var input = builder.OpenElement("InputNumber");
+                    // input.AddAttribute("id", propertyInfo.Name);
+                    //
+                    // var memberAccess = Expression
+                    //     .MakeMemberAccess(Expression.Constant(model), propertyInfo);
+                    //
+                    // input.AddAttribute("bind-Value", memberAccess);
+                    
+                    if (attributes.TryMatch(out RequiredAttribute _)) {
+                        input.AddAttribute("required", true);
+                    }
+                }
+                else if (propertyInfo.PropertyType == propertyInfo.DeclaringType) {
+                    throw new ArgumentException($"Recursive type {propertyInfo.DeclaringType} is not supported");
+                }
+                else {
+                    using var div = builder.OpenElement("div");
+                    div.AddAttribute("style", "margin: 1em;");
+                    var newObj = (Dictionary<string, object>)props.GetValueOrCreate(
+                        propertyInfo.Name,
+                        _ => new Dictionary<string, object>());
+
+                    ReflectionVisitor.VisitProperties(
+                        propertyInfo.PropertyType,
+                        propInfo => AcceptProperties(propInfo, newObj)
+                        );
+                }
+            }
+        }
+    };
+    
+    [Parameter] public EventCallback<EditContext> OnValidSubmit { get; set; }
+    
+    static XElement DictToXml(Dictionary<string, object> dict, string rootName = "root")
+    {
+        var root = new XElement(rootName);
+        foreach ((string key, object value) in dict) {
+            switch (value) {
+            case null:
+            case string str when string.IsNullOrWhiteSpace(str):
+            case Dictionary<string, object> {Count: 0}:
+                break;
+
+            case Dictionary<string, object> subDict:
+                root.Add(DictToXml(subDict, key));
+                break;
+
+            default:
+                root.Add(new XElement(key, value));
+                break;
+            }
+        }
+        return root;
+    }
+}

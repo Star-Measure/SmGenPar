@@ -20,4 +20,8 @@
     <ProjectReference Include="..\SmGenPar.Logic\SmGenPar.Logic.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components" />
+  </ItemGroup>
+
 </Project>

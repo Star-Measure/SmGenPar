@@ -1,69 +1,39 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
+
 namespace SmGenPar.Logic.Models;
 
 [PublicAPI]
-public class Extend
+public record Extend
 {
-    [SerializeProperty]
-    [Required]
-    public DateTime       DataHora       { get; set; }
-    public PostosHorarios PostosHorarios { get; set; }
-    public SelfRead       SelfRead       { get; set; }
-    
-    [SerializeProperty(Name = "Codigo do Consumidor")]
-    public int           NumeroTrafo    { get; set; }
-    public Qee            Qee            { get; set; }
-    
-    public Extend()
-    {
-        DataHora       = default;
-        PostosHorarios = new();
-        SelfRead       = new();
-        Qee            = new();
-    }
+    [Display(Name = "Data e Hora")]
+    [DataType(DataType.DateTime)]
+    public DateTime DataHora { get; set; }
+
+    [Display(Name = "Postos Horarios")]
+    public PostosHorarios PostosHorarios { get; set; } = new();
+
+    [Display]
+    public SelfRead SelfRead { get; set; } = new();
+
+    [Display(Name = "Codigo do Consumidor")]
+    public NumeroTrafo NumeroTrafo { get; set; } = new();
+
+    [Display(Name = "QEE")]
+    public Qee Qee { get; set; } = new();
 }
 
-public class SerializePropertyAttribute : Attribute
+[PublicAPI]
+public class NumeroTrafo
 {
-    public string Name { get; init; }
-    
-    public SerializePropertyAttribute(string name)
+    public enum AcaoTrafo
     {
-        Name = name;
+        SemAcao,
+        Ativar,
+        Desativar
     }
-    
-    public SerializePropertyAttribute()
-    {
-        Name = string.Empty;
-    }
+    [Display(Name = "")]
+    public AcaoTrafo Acao { get; set; }
+    public int Numero { get; set; }
 }
 
-// public string Name = "Extend";
-// public static readonly string[] ParameterNames = {
-//     "Data Hora",
-//     "Postos Horarios",
-//     "Self Read",
-//     "Numero Trafo",
-//     "Mostrador",
-//     "Feriados",
-//     "Horario De Verao",
-//     "Reposicao",
-//     "QEE",
-//     "Tarifa Reativos",
-//     "Modo II",
-// };
-// public enum Parametros
-// {
-//     DataHora,
-//     PostosHorarios,
-//     SelfRead,
-//     NumeroTrafo,
-//     Mostrador,
-//     Feriados,
-//     HorarioDeVerao,
-//     Reposicao,
-//     Qee,
-//     TarifaReativos,
-//     Modo2,
-// }

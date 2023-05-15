@@ -5,29 +5,28 @@ using JetBrains.Annotations;
 namespace SmGenPar.Logic.Models;
 
 [PublicAPI]
-public class PostosHorarios : IEnumerable<TimeOnly>
+public class PostosHorarios
 {
-    [SerializeProperty]
-    public TimeOnly Ponta { get; set; }
+    [DataType(DataType.Time)]
+    public string Ponta { get; set; }
 
-    [SerializeProperty(Name = "Fora Ponta")]
-    public TimeOnly ForaPonta { get; set; }
+    [Display(Name = "Fora Ponta")]
+    [DataType(DataType.Time)]
+    public string ForaPonta { get; set; }
+    
+    [DataType(DataType.Time)]
+    public string Reservado { get; set; }
 
-    [SerializeProperty]
-    public TimeOnly Reservado { get; set; }
-
-    [SerializeProperty]
-    public TimeOnly Feriado { get; set; }
-
-    public IEnumerator<TimeOnly> GetEnumerator()
+    [DataType(DataType.Time)]
+    public string Feriado { get; set; }
+    
+    public PostosHorarios()
     {
-        yield return Ponta;
-        yield return ForaPonta;
-        yield return Reservado;
-        yield return Feriado;
+        Ponta       = string.Empty;
+        ForaPonta   = string.Empty;
+        Reservado   = string.Empty;
+        Feriado     = string.Empty;
     }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 [PublicAPI]

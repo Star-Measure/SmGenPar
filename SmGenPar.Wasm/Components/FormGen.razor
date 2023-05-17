@@ -118,9 +118,10 @@
                     element ??= Activator.CreateInstance(elementType);
                 }
                 builder.OpenElement(0, "div");
-                AddLabel(builder, $"{id}[{i}]", $"{id}[{i}]");
-                var memberExpression = Expression.ArrayIndex(expression, Expression.Constant(i));
-                AddInput(builder, $"{id}[{i}]", element, elementType, memberExpression);
+                AddLabel(builder, $"{id}[{i}]", $"{i+1}: ");
+                // TODO: Fix this
+                var arraySetValueExpression = Expression.ArrayAccess(expression, Expression.Constant(i));
+                AddInput(builder, $"{id}[{i}]", element, elementType, arraySetValueExpression);
                 builder.CloseElement();
             }
 
@@ -146,8 +147,10 @@
             return;
         }
     }
-
-    void OpenSelectElement(RenderTreeBuilder builder, object id, string text, Action<ChangeEventArgs>? callback = null)
+    
+    
+    void OpenSelectElement(RenderTreeBuilder builder, object id, string text, Action
+                                                                                  <ChangeEventArgs>? callback = null)
     {
         builder.OpenElement(0, "select");
         builder.AddAttribute(1, "id", id);
@@ -156,7 +159,8 @@
         builder.AddContent(4, text);
     }
 
-    void AddInputElement(RenderTreeBuilder builder, object id, string type, Action<ChangeEventArgs>? callback = null)
+    void AddInputElement(RenderTreeBuilder builder, object id, string type, Action
+                                                                                <ChangeEventArgs>? callback = null)
     {
         builder.OpenElement(0, "input");
         builder.AddAttribute(1, "id", id);

@@ -5,32 +5,33 @@ using JetBrains.Annotations;
 namespace SmGenPar.Logic.Models;
 
 [PublicAPI]
-public class PostosHorarios
+public record PostosHorarios
 {
-    [DataType(DataType.Time)]
-    public string Ponta { get; set; }
-
-    [Display(Name = "Fora Ponta")]
-    [DataType(DataType.Time)]
-    public string ForaPonta { get; set; }
-    
-    [DataType(DataType.Time)]
-    public string Reservado { get; set; }
-
-    [DataType(DataType.Time)]
-    public string Feriado { get; set; }
-    
-    public PostosHorarios()
-    {
-        Ponta       = string.Empty;
-        ForaPonta   = string.Empty;
-        Reservado   = string.Empty;
-        Feriado     = string.Empty;
-    }
+    public Posto? Domingo { get; set; }
+    public Posto? Segunda { get; set; }
+    public Posto? Terca   { get; set; }
+    public Posto? Quarta  { get; set; }
+    public Posto? Quinta  { get; set; }
+    public Posto? Sexta   { get; set; }
+    public Posto? Sabado  { get; set; }
+    public Posto? Feriado { get; set; }
 }
 
 [PublicAPI]
-public class ReposicaoDemanda
+public record Posto
+{
+    public TimeOnly? Ponta { get; set; }
+
+    [Display(Name = "Fora Ponta")]
+    public TimeOnly? ForaPonta { get; set; }
+
+    public TimeOnly? Reservado { get; set; }
+
+    public TimeOnly? Feriado { get; set; }
+}
+
+[PublicAPI]
+public record ReposicaoDemanda
 {
     public byte Janeiro   { get; set; }
     public byte Fevereiro { get; set; }

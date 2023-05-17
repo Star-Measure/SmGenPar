@@ -1,24 +1,30 @@
 ﻿@page "/Parametros/Extend"
-@using SmGenPar.Logic.Models
 @using System.Xml.Linq
+@using System.Text.Json
+@using SmGenPar.Logic.Models
+@using SmGenPar.Wasm.Components
 
 <h3>ParametrosExtend</h3>
+<FormGen Model="@_model"
+         Result="@_result"
+         OnSubmit="@OnValidSubmit">
+    
+    <button type="submit">Submit</button>
+</FormGen>
 
-<ReflectForm TType="Extend"
-             OnValidSubmit="OnValidSubmit"
-             Parameters="@FormResult"
-             >
-<button>Submit</button>
-</ReflectForm>
 
 @code {
 
-    [Parameter]
-    public Dictionary<string, object>? FormResult { get; set; } = new();
+    readonly Dictionary<object,object?> _result = new();
+
+    readonly Extend _model = new Extend();
 
     void OnValidSubmit()
     {
-        Console.WriteLine(DictToXml(FormResult!, "PostosHorarios").ToString());
+        var jsonOptions = new JsonSerializerOptions {
+            WriteIndented = true,
+        };
+        Console.WriteLine(JsonSerializer.Serialize(_result, jsonOptions));
     }
 
     static XElement DictToXml(Dictionary<string, object> dict, string rootName = "root")
@@ -28,7 +34,7 @@
             switch (value) {
             case null:
             case string str when string.IsNullOrWhiteSpace(str):
-            case Dictionary<string, object> {Count: 0}:
+            case Dictionary<string, object> { Count: 0 }:
                 break;
 
             case Dictionary<string, object> subDict:

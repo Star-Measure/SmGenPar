@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Numerics;
 using JetBrains.Annotations;
 
 namespace SmGenPar.Logic.Models;
@@ -7,33 +8,19 @@ namespace SmGenPar.Logic.Models;
 public record Extend
 {
     [Display(Name = "Data e Hora")]
-    [DataType(DataType.DateTime)]
     public DateTime DataHora { get; set; }
 
     [Display(Name = "Postos Horarios")]
-    public PostosHorarios PostosHorarios { get; set; } = new();
+    public PostosHorarios? PostosHorarios { get; set; }
 
     [Display]
-    public SelfRead SelfRead { get; set; } = new();
+    public DateOnly[]? SelfRead { get; set; } = new DateOnly[12];
 
     [Display(Name = "Codigo do Consumidor")]
-    public NumeroTrafo NumeroTrafo { get; set; } = new();
-
+    public NumeroTrafo? NumeroTrafo { get; set; }
+    
+    public MostradoresFlag Mostradores { get; set; }
+    
     [Display(Name = "QEE")]
-    public Qee Qee { get; set; } = new();
+    public Qee? Qee { get; set; }
 }
-
-[PublicAPI]
-public class NumeroTrafo
-{
-    public enum AcaoTrafo
-    {
-        SemAcao,
-        Ativar,
-        Desativar
-    }
-    [Display(Name = "")]
-    public AcaoTrafo Acao { get; set; }
-    public int Numero { get; set; }
-}
-

@@ -4,6 +4,7 @@ using static System.Runtime.InteropServices.CollectionsMarshal;
 
 namespace SmGenPar.Logic.Reflection;
 
+[PublicAPI]
 public static class CacheExtensions
 {
     public static ref TValue? GetValueRefOrCreate<TKey, TValue>(
@@ -13,40 +14,44 @@ public static class CacheExtensions
     {
         ref var values = ref GetValueRefOrAddDefault(dictionary, key, out bool exists);
 
-        if (!exists) {
+        if (!exists || values is null) {
             values = factory(key);
         }
         
         return ref values;
     }
-
-    public static TValue? GetValueOrCreate<TKey, TValue>(
+    public static ref TValue? GetValueRefOrCreate<TKey, TValue>(
         this Dictionary<TKey, TValue> dictionary,
         TKey                          key,
-        Func<TKey, TValue>            factory) where TKey : notnull
+        Func<TValue>            factory) where TKey : notnull
     {
         ref var values = ref GetValueRefOrAddDefault(dictionary, key, out bool exists);
 
-        if (!exists) {
-            values = factory(key);
+        if (!exists || values is null) {
+            values = factory();
         }
+        
+        return ref values;
+    }
 
-        return values;
+    public static PropertyInfo[] GetPropertiesCached(this Type type)
+    {
+        return Cache.PropertyInfo.GetValueRefOrCreate(type, type.GetProperties)!;
     }
 }
 
-public static class Cached
+public static class Cache
 {
     public static readonly Dictionary<Type, PropertyInfo[]>      PropertyInfo = new();
     public static readonly Dictionary<PropertyInfo, Attribute[]> Attributes   = new();
 }
 
 [PublicAPI]
-public static class ReflectionVisitor
+public static class Reflection
 {
-    public static void VisitProperties(Type type, Action<PropertyInfo> action)
+    public static void ForEachProperty(Type type, Action<PropertyInfo> action)
     {
-        var properties = Cached.PropertyInfo.GetValueOrCreate(type, t => t.GetProperties())!;
+        var properties = Cache.PropertyInfo.GetValueRefOrCreate(type, t => t.GetProperties())!;
         var span       = properties.AsSpan();
 
         foreach (var propertyInfo in span) {
@@ -54,9 +59,9 @@ public static class ReflectionVisitor
         }
     }
 
-    public static void VisitAttributes(PropertyInfo propertyInfo, Action<Attribute[]> action)
+    public static void ForEachAttributes(PropertyInfo propertyInfo, Action<Attribute[]> action)
     {
-        var attributes = Cached.Attributes.GetValueOrCreate(
+        var attributes = Cache.Attributes.GetValueRefOrCreate(
             propertyInfo, info => info.GetCustomAttributes().ToArray()
             )!;
         action(attributes);

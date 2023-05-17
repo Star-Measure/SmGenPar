@@ -6,7 +6,6 @@
 
 <h3>ParametrosExtend</h3>
 <FormGen Model="@_model"
-         Result="@_result"
          OnSubmit="@OnValidSubmit">
     
     <button type="submit">Submit</button>
@@ -14,9 +13,6 @@
 
 
 @code {
-
-    readonly Dictionary<object,object?> _result = new();
-
     readonly Extend _model = new Extend();
 
     void OnValidSubmit()
@@ -24,7 +20,7 @@
         var jsonOptions = new JsonSerializerOptions {
             WriteIndented = true,
         };
-        Console.WriteLine(JsonSerializer.Serialize(_result, jsonOptions));
+        Console.WriteLine(JsonSerializer.Serialize(_model, jsonOptions));
     }
 
     static XElement DictToXml(Dictionary<string, object> dict, string rootName = "root")

@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
 @using System.Collections
 @using System.ComponentModel
+@using System.Linq.Expressions
+@using System.Reflection
 @using System.Text.Json
 @using SmGenPar.Logic.Reflection
 
@@ -13,9 +15,6 @@
 </EditForm>
 
 @code {
-
-    [Parameter]
-    public Dictionary<object, object?>? Result { get; set; }
 
     [Parameter]
     public object? Model { get; set; }
@@ -32,21 +31,15 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-
-    static Dictionary<object, object?> NewDict() => new();
-
     RenderFragment RenderForm() => builder =>
     {
         var type = Model?.GetType()!;
-        foreach (var property in type.GetPropertiesCached()) {
-            object? propertyValue = property.GetValue(Model) ?? Activator.CreateInstance(property.PropertyType);
-            builder.OpenElement(0, "div");
-            string id = property.Name;
-            AddLabel(builder, id, id);
-            Result ??= new();
-            AddInput(builder, id, propertyValue, property.PropertyType, Result);
-            builder.CloseElement();
-        }
+        var constantExpression = Expression.Constant(Model);
+        builder.OpenElement(0, "div");
+        string id = type.Name;
+        AddLabel(builder, id, id);
+        AddInput(builder, type.Name, Model, type, constantExpression);
+        builder.CloseElement();
     };
 
     void AddLabel(RenderTreeBuilder builder, string id, string text)
@@ -58,28 +51,32 @@
     }
 
     void AddInput(RenderTreeBuilder builder, object id, object? value, Type type,
-                  Dictionary<object, object?> currentObject)
+                  Expression expression)
     {
         var typeCode = Type.GetTypeCode(type);
 
-        void AddPropertyCallback(ChangeEventArgs args)
+        Action<ChangeEventArgs> ExpressionCallback() => args =>
         {
-            currentObject[id] = args.Value;
-        }
+            var converter = TypeDescriptor.GetConverter(type);
+            object? convertedValue = converter.ConvertFrom(args.Value!);
+            var valueParameter = Expression.Parameter(type);
+            var assignment = Expression.Assign(expression, valueParameter);
+            var lambdaExpression = Expression.Lambda(assignment, valueParameter);
+            lambdaExpression.Compile().DynamicInvoke(convertedValue);
+        };
 
-        matchTypeCode:
         switch (typeCode) {
         case >= TypeCode.SByte and <= TypeCode.Decimal when!type.IsEnum:
-            AddInputElement(builder, id, "number", AddPropertyCallback);
+            AddInputElement(builder, id, "number", ExpressionCallback());
             return;
         case TypeCode.Boolean:
-            AddInputElement(builder, id, "checkbox", AddPropertyCallback);
+            AddInputElement(builder, id, "checkbox", ExpressionCallback());
             return;
         case TypeCode.String:
-            AddInputElement(builder, id, "text", AddPropertyCallback);
+            AddInputElement(builder, id, "text", ExpressionCallback());
             return;
         case TypeCode.DateTime:
-            AddInputElement(builder, id, "datetime-local", AddPropertyCallback);
+            AddInputElement(builder, id, "datetime-local", ExpressionCallback());
             return;
         case TypeCode.Object:
             goto matchObject;
@@ -88,7 +85,7 @@
         matchObject:
         switch (value) {
         case Enum:
-            OpenSelectElement(builder, id, type.Name, AddPropertyCallback);
+            OpenSelectElement(builder, id, type.Name, ExpressionCallback());
             foreach (object? item in Enum.GetValues(type)) {
                 builder.OpenElement(0, "option");
                 builder.AddAttribute(1, "value", item);
@@ -97,43 +94,53 @@
             }
             builder.CloseElement();
             return;
-        case null when Nullable.GetUnderlyingType(type) is {} underlyingType:
-            type = underlyingType;
-            typeCode = Type.GetTypeCode(type);
-            value = Activator.CreateInstance(type);
-            goto matchTypeCode;
         case DateTimeOffset or DateTime:
-            AddInputElement(builder, id, "datetime-local", AddPropertyCallback);
+            AddInputElement(builder, id, "datetime-local", ExpressionCallback());
             return;
         case Guid or string:
-            AddInputElement(builder, id, "text", AddPropertyCallback);
+            AddInputElement(builder, id, "text", ExpressionCallback());
             return;
         case TimeSpan or TimeOnly:
-            AddInputElement(builder, id, "time", AddPropertyCallback);
+            AddInputElement(builder, id, "time", ExpressionCallback());
             return;
         case DateOnly:
-            AddInputElement(builder, id, "date", AddPropertyCallback);
+            AddInputElement(builder, id, "date", ExpressionCallback());
             return;
         case IList array:
             var elementType = type.GetElementType() ?? typeof(object);
-            currentObject = (Dictionary<object, object?>)
-                currentObject.GetValueRefOrCreate(id, NewDict)!;
-            int i = 0;
-            foreach (object? item in array) {
-                AddInput(builder, i, item, elementType, currentObject);
-                i += 1;
+
+            for (int i = 0; i < array.Count; i++) {
+                object? element = array[i];
+                if (Nullable.GetUnderlyingType(elementType) is {} underlyingType) {
+                    element ??= Activator.CreateInstance(underlyingType);
+                }
+                else {
+                    element ??= Activator.CreateInstance(elementType);
+                }
+                builder.OpenElement(0, "div");
+                AddLabel(builder, $"{id}[{i}]", $"{id}[{i}]");
+                var memberExpression = Expression.ArrayIndex(expression, Expression.Constant(i));
+                AddInput(builder, $"{id}[{i}]", element, elementType, memberExpression);
+                builder.CloseElement();
             }
+
             return;
         default:
-            currentObject = (Dictionary<object, object?>)
-                currentObject.GetValueRefOrCreate(id, NewDict)!;
-
             var properties = type.GetPropertiesCached();
-            foreach (var property in properties) {
+            foreach (var propertyInfo in properties) {
                 builder.OpenElement(0, "div");
-                object? newValue = property.GetValue(value) ?? Activator.CreateInstance(property.PropertyType);
-                AddLabel(builder, property.Name, property.Name);
-                AddInput(builder, property.Name, newValue, property.PropertyType, currentObject);
+                object? newValue = propertyInfo.GetValue(value);
+                if (Nullable.GetUnderlyingType(propertyInfo.PropertyType) is {} underlyingType) {
+                    newValue ??= Activator.CreateInstance(underlyingType);
+                }
+                else {
+                    newValue ??= Activator.CreateInstance(propertyInfo.PropertyType);
+                }
+
+                propertyInfo.SetValue(value, newValue);
+                AddLabel(builder, propertyInfo.Name, propertyInfo.Name);
+                var memberExpression = Expression.Property(expression, propertyInfo.Name);
+                AddInput(builder, propertyInfo.Name, newValue, propertyInfo.PropertyType, memberExpression);
                 builder.CloseElement();
             }
             return;
@@ -157,5 +164,4 @@
         builder.AddAttribute(3, "onchange", callback);
         builder.CloseElement();
     }
-
 }

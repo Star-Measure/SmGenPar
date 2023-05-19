@@ -1,9 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
 @using System.Collections
 @using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
 @using System.Linq.Expressions
 @using System.Reflection
 @using System.Text.Json
+@using SmGenPar.Logic.Models
 @using SmGenPar.Logic.Reflection
 
 <EditForm Model="@Model"
@@ -16,17 +19,22 @@
 
 @code {
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
     [Parameter]
     public object? Model { get; set; }
 
     [Parameter]
-    public EventCallback OnSubmit { get; set; }
+    public EventCallback<EditContext> OnSubmit { get; set; }
 
     [Parameter]
-    public EventCallback OnValidSubmit { get; set; }
+    public EventCallback<EditContext> OnValidSubmit { get; set; }
 
     [Parameter]
-    public EventCallback OnInvalidSubmit { get; set; }
+    public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -34,138 +42,23 @@
     RenderFragment RenderForm() => builder =>
     {
         var type = Model?.GetType()!;
-        var constantExpression = Expression.Constant(Model);
-        builder.OpenElement(0, "div");
-        string id = type.Name;
-        AddLabel(builder, id, id);
-        AddInput(builder, type.Name, Model, type, constantExpression);
-        builder.CloseElement();
+        foreach (var propertyInfo in type.GetPropertiesCached()) {
+            var attributes = propertyInfo.GetCustomAttributes().ToArray();
+            builder.OpenElement(0, "div");
+            RenderHelper.AddLabelElement(builder, propertyInfo.Name, propertyInfo.Name);
+            builder.CloseElement();
+            RenderHelper.AddInput(builder, propertyInfo.PropertyType, args =>
+            {
+                var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
+
+                propertyInfo.SetValue(Model,
+                    converter.CanConvertFrom(args.Value!.GetType())
+                        ? converter.ConvertFrom(args.Value)
+                        : args.Value);
+            }, attributes);
+        }
     };
 
-    void AddLabel(RenderTreeBuilder builder, string id, string text)
-    {
-        builder.OpenElement(0, "label");
-        builder.AddAttribute(1, "for", id);
-        builder.AddContent(2, text);
-        builder.CloseElement();
-    }
+}
 
-    void AddInput(RenderTreeBuilder builder, object id, object? value, Type type,
-                  Expression expression)
-    {
-        var typeCode = Type.GetTypeCode(type);
-
-        Action<ChangeEventArgs> ExpressionCallback() => args =>
-        {
-            var converter = TypeDescriptor.GetConverter(type);
-            object? convertedValue = converter.ConvertFrom(args.Value!);
-            var valueParameter = Expression.Parameter(type);
-            var assignment = Expression.Assign(expression, valueParameter);
-            var lambdaExpression = Expression.Lambda(assignment, valueParameter);
-            lambdaExpression.Compile().DynamicInvoke(convertedValue);
-        };
-
-        switch (typeCode) {
-        case >= TypeCode.SByte and <= TypeCode.Decimal when!type.IsEnum:
-            AddInputElement(builder, id, "number", ExpressionCallback());
-            return;
-        case TypeCode.Boolean:
-            AddInputElement(builder, id, "checkbox", ExpressionCallback());
-            return;
-        case TypeCode.String:
-            AddInputElement(builder, id, "text", ExpressionCallback());
-            return;
-        case TypeCode.DateTime:
-            AddInputElement(builder, id, "datetime-local", ExpressionCallback());
-            return;
-        case TypeCode.Object:
-            goto matchObject;
-        }
-
-        matchObject:
-        switch (value) {
-        case Enum:
-            OpenSelectElement(builder, id, type.Name, ExpressionCallback());
-            foreach (object? item in Enum.GetValues(type)) {
-                builder.OpenElement(0, "option");
-                builder.AddAttribute(1, "value", item);
-                builder.AddContent(2, item);
-                builder.CloseElement();
-            }
-            builder.CloseElement();
-            return;
-        case DateTimeOffset or DateTime:
-            AddInputElement(builder, id, "datetime-local", ExpressionCallback());
-            return;
-        case Guid or string:
-            AddInputElement(builder, id, "text", ExpressionCallback());
-            return;
-        case TimeSpan or TimeOnly:
-            AddInputElement(builder, id, "time", ExpressionCallback());
-            return;
-        case DateOnly:
-            AddInputElement(builder, id, "date", ExpressionCallback());
-            return;
-        case IList array:
-            var elementType = type.GetElementType() ?? typeof(object);
-
-            for (int i = 0; i < array.Count; i++) {
-                object? element = array[i];
-                if (Nullable.GetUnderlyingType(elementType) is {} underlyingType) {
-                    element ??= Activator.CreateInstance(underlyingType);
-                }
-                else {
-                    element ??= Activator.CreateInstance(elementType);
-                }
-                builder.OpenElement(0, "div");
-                AddLabel(builder, $"{id}[{i}]", $"{i+1}: ");
-                // TODO: Fix this
-                var arraySetValueExpression = Expression.ArrayAccess(expression, Expression.Constant(i));
-                AddInput(builder, $"{id}[{i}]", element, elementType, arraySetValueExpression);
-                builder.CloseElement();
-            }
-
-            return;
-        default:
-            var properties = type.GetPropertiesCached();
-            foreach (var propertyInfo in properties) {
-                builder.OpenElement(0, "div");
-                object? newValue = propertyInfo.GetValue(value);
-                if (Nullable.GetUnderlyingType(propertyInfo.PropertyType) is {} underlyingType) {
-                    newValue ??= Activator.CreateInstance(underlyingType);
-                }
-                else {
-                    newValue ??= Activator.CreateInstance(propertyInfo.PropertyType);
-                }
-
-                propertyInfo.SetValue(value, newValue);
-                AddLabel(builder, propertyInfo.Name, propertyInfo.Name);
-                var memberExpression = Expression.Property(expression, propertyInfo.Name);
-                AddInput(builder, propertyInfo.Name, newValue, propertyInfo.PropertyType, memberExpression);
-                builder.CloseElement();
-            }
-            return;
-        }
-    }
-    
-    
-    void OpenSelectElement(RenderTreeBuilder builder, object id, string text, Action
-                                                                                  <ChangeEventArgs>? callback = null)
-    {
-        builder.OpenElement(0, "select");
-        builder.AddAttribute(1, "id", id);
-        builder.AddAttribute(2, "onchange", callback);
-        builder.AddAttribute(3, "value", "");
-        builder.AddContent(4, text);
-    }
-
-    void AddInputElement(RenderTreeBuilder builder, object id, string type, Action
-                                                                                <ChangeEventArgs>? callback = null)
-    {
-        builder.OpenElement(0, "input");
-        builder.AddAttribute(1, "id", id);
-        builder.AddAttribute(2, "type", type);
-        builder.AddAttribute(3, "onchange", callback);
-        builder.CloseElement();
-    }
 }

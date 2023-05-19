@@ -5,22 +5,21 @@
 @using SmGenPar.Wasm.Components
 
 <h3>ParametrosExtend</h3>
-<FormGen Model="@_model"
+<FormGen Model="@Model"
          OnSubmit="@OnValidSubmit">
-    
     <button type="submit">Submit</button>
 </FormGen>
 
 
 @code {
-    readonly Extend _model = new Extend();
-
-    void OnValidSubmit()
+    static readonly Extend Model = new Extend();
+    void OnValidSubmit(EditContext editContext)
     {
-        var jsonOptions = new JsonSerializerOptions {
+        var jsonOptions = new JsonSerializerOptions
+        {
             WriteIndented = true,
         };
-        Console.WriteLine(JsonSerializer.Serialize(_model, jsonOptions));
+        Console.WriteLine(JsonSerializer.Serialize(editContext.Model, jsonOptions));
     }
 
     static XElement DictToXml(Dictionary<string, object> dict, string rootName = "root")
@@ -44,4 +43,5 @@
         }
         return root;
     }
+
 }

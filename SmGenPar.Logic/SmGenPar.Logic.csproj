@@ -11,8 +11,4 @@
       <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta07" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\Libraries\IO\SMIO\SMIO\SMIO.csproj" />
-    </ItemGroup>
-
 </Project>

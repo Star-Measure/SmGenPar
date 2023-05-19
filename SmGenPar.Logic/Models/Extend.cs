@@ -14,7 +14,8 @@ public record Extend
     public PostosHorarios? PostosHorarios { get; set; }
 
     [Display]
-    public DateOnly[]? SelfRead { get; set; } = new DateOnly[12];
+    [Length(12)]
+    public DateOnly[]? SelfRead { get; set; }
 
     [Display(Name = "Codigo do Consumidor")]
     public NumeroTrafo? NumeroTrafo { get; set; }
@@ -23,4 +24,14 @@ public record Extend
     
     [Display(Name = "QEE")]
     public Qee? Qee { get; set; }
+}
+
+public class LengthAttribute : Attribute
+{
+    public readonly int Lenght;
+    
+    public LengthAttribute(int lenght)
+    {
+        Lenght = lenght;
+    }
 }

@@ -39,6 +39,10 @@ public static class Extensions
     {
         return Cache.PropertyInfo.GetValueRefOrCreate(type, type.GetProperties)!;
     }
+    public static Attribute[] GetAttributesCached(this PropertyInfo propertyInfo)
+    {
+        return Cache.Attributes.GetValueRefOrCreate(propertyInfo, propertyInfo.GetCustomAttributes().ToArray)!;
+    }
 }
 
 [PublicAPI]

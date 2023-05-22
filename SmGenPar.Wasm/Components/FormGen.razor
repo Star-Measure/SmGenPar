@@ -18,12 +18,7 @@
 </EditForm>
 
 @code {
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-    }
-
+    
     [Parameter]
     public object? Model { get; set; }
 
@@ -41,24 +36,6 @@
 
     RenderFragment RenderForm() => builder =>
     {
-        var type = Model?.GetType()!;
-        foreach (var propertyInfo in type.GetPropertiesCached()) {
-            var attributes = propertyInfo.GetCustomAttributes().ToArray();
-            builder.OpenElement(0, "div");
-            RenderHelper.AddLabelElement(builder, propertyInfo.Name, propertyInfo.Name);
-            builder.CloseElement();
-            RenderHelper.AddInput(builder, propertyInfo.PropertyType, args =>
-            {
-                var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
-
-                propertyInfo.SetValue(Model,
-                    converter.CanConvertFrom(args.Value!.GetType())
-                        ? converter.ConvertFrom(args.Value)
-                        : args.Value);
-            }, attributes);
-        }
+        ObjectFormRender.RenderModel(builder, Model!);
     };
-
-}
-
 }

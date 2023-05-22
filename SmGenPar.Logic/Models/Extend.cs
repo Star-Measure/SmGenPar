@@ -28,9 +28,9 @@ public record Extend
 
 public class LengthAttribute : Attribute
 {
-    public readonly int Lenght;
+    public readonly long Lenght;
     
-    public LengthAttribute(int lenght)
+    public LengthAttribute(long lenght)
     {
         Lenght = lenght;
     }

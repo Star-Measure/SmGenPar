@@ -16,9 +16,9 @@ public static class RenderHelper
     {
         int sequence = 0;
         builder.OpenElement(sequence  += 1, "option");
-        builder.AddAttribute(sequence += 1, "id", id);
+        builder.AddAttribute(sequence += 1, "forId", id);
         builder.AddAttribute(sequence += 1, "value", enumValue);
-        builder.AddContent(sequence   += 1, enumValue);
+        builder.AddContent(sequence + 1, enumValue);
         builder.CloseElement();
     }
 
@@ -32,26 +32,26 @@ public static class RenderHelper
         int sequence          = 0;
         var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
         builder.OpenElement(sequence  += 1, "select");
-        builder.AddAttribute(sequence += 1, "id", id);
+        builder.AddAttribute(sequence += 1, "forId", id);
         builder.AddAttribute(sequence += 1, "onchange", callback);
         builder.AddAttribute(sequence += 1, "value", text);
-        if (requiredAttribute is { }) {
-            builder.AddAttribute(sequence += 1, "required", true);
+        if (requiredAttribute is not null) {
+            builder.AddAttribute(sequence + 1, "required", true);
         }
     }
 
     public static void AddLabelElement(
         RenderTreeBuilder  builder,
-        string?            id,
-        string             text,
+        string?            forId,
+        string             contentText,
         params Attribute[] attributes)
     {
         var displayAttribute = attributes.OfType<DisplayAttribute>().FirstOrDefault();
-        text = displayAttribute?.Name ?? text;
+        contentText = displayAttribute?.Name ?? contentText;
 
         builder.OpenElement(0, "label");
-        builder.AddAttribute(1, "for", id);
-        builder.AddContent(2, text);
+        builder.AddAttribute(1, "for", forId);
+        builder.AddContent(2, contentText);
         builder.CloseElement();
     }
 
@@ -66,9 +66,9 @@ public static class RenderHelper
         var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
 
         builder.OpenElement(sequence  += 1, "input");
-        builder.AddAttribute(sequence += 1, "id", id);
+        builder.AddAttribute(sequence += 1, "forId", id);
         builder.AddAttribute(sequence += 1, "type", type);
-        if (requiredAttribute is { }) {
+        if (requiredAttribute is not null) {
             builder.AddAttribute(sequence += 1, "required", true);
         }
 

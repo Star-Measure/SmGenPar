@@ -1,47 +1,58 @@
-﻿@page "/Parametros/Extend"
-@using System.Xml.Linq
+﻿@page "/Parametros/Extend/{ParameterName}"
 @using System.Text.Json
+@using System.Text.Json.Serialization
+@using Newtonsoft.Json
 @using SmGenPar.Logic.Models
 @using SmGenPar.Wasm.Components
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using SmGenPar.Wasm
 
-<h3>ParametrosExtend</h3>
-<FormGen Model="@Model"
-         OnSubmit="@OnValidSubmit">
-    <button type="submit">Submit</button>
-</FormGen>
+<h3>ParameterNames Extend</h3>
 
+@(_renderFragments![ParameterName!])
+
+<button type="submit" @onclick="OnSubmit">Submit</button>
 
 @code {
-    static readonly Extend Model = new Extend();
-    void OnValidSubmit(EditContext editContext)
+
+    [Parameter]
+    public string? ParameterName { get; set; }
+
+    static readonly Extend? Model = (Extend)ObjectFormRender.Models["Extend"];
+    
+    Dictionary<string, RenderFragment>? _renderFragments;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _renderFragments = ObjectFormRender.RenderModelProperties(Model!);
+    }
+
+    void OnSubmit()
+    {
+        Console.WriteLine(Model);
+    }
+    
+    static void OnValidSubmit(EditContext editContext)
+    {
+        Console.WriteLine(
+            JsonSerializer.Serialize(editContext.Model)
+            );
+        Console.WriteLine(
+            SerializeToXml(editContext.Model, "Extend")
+            );
+    }
+
+    static string SerializeToXml(object obj, string rootName = "root")
     {
         var jsonOptions = new JsonSerializerOptions
         {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = true,
         };
-        Console.WriteLine(JsonSerializer.Serialize(editContext.Model, jsonOptions));
-    }
-
-    static XElement DictToXml(Dictionary<string, object> dict, string rootName = "root")
-    {
-        var root = new XElement(rootName);
-        foreach ((string key, object value) in dict) {
-            switch (value) {
-            case null:
-            case string str when string.IsNullOrWhiteSpace(str):
-            case Dictionary<string, object> { Count: 0 }:
-                break;
-
-            case Dictionary<string, object> subDict:
-                root.Add(DictToXml(subDict, key));
-                break;
-
-            default:
-                root.Add(new XElement(key, value));
-                break;
-            }
-        }
-        return root;
+        var json = JsonSerializer.Serialize(obj, jsonOptions);
+        var doc = JsonConvert.DeserializeXNode(json, rootName);
+        return doc.ToString();
     }
 
 }

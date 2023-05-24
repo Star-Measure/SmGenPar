@@ -1,6 +1,12 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using SmGenPar.Logic.Models
+@using SmGenPar.Logic.Reflection
+@using SmGenPar.Wasm.Components
+@using System.Reflection
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">SmGenPar.Wasm</a>
+        <a class="navbar-brand" href="">
+            Parametrização
+        </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -10,34 +16,31 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Parametros/Extend/">
-                <span class="oi oi-list-rich" aria-hidden="true"></span>
-                Extend
+            <NavLink class="nav-link" href="/">
+                <span class="oi oi-home" aria-hidden="true"></span>
+                Home
             </NavLink>
         </div>
-
-        @*
-        @foreach (var property in Cached.PropertyInfo.GetValueOrCreate(
-            typeof(Extend), 
-            type => type.GetProperties())!) {
+        @{
+            var extendType = typeof(Extend);
+            var properties = extendType.GetPropertiesCached();
             
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href=@(@$"parametros/extend/{property.Name}")>
-                    <span class="oi oi-list-rich" aria-hidden="true"></span>
-                    @property.Name
-                </NavLink>
-            </div>
+            foreach (var propertyInfo in properties) {
+                var pageRef = $"Parametros/Extend/{propertyInfo.Name}";
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="@pageRef">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span>
+                        @propertyInfo.Name
+                    </NavLink>
+                </div>
+            }
         }
-        *@
 
     </nav>
 </div>
 
 @code {
-
-    void SubmitDataHora()
-    {}
-
+    
     private bool _collapseNavMenu = true;
 
     private string? NavMenuCssClass => _collapseNavMenu ? "collapse" : null;

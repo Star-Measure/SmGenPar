@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Xml.Serialization;
 using JetBrains.Annotations;
 
 namespace SmGenPar.Logic.Models;

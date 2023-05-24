@@ -1,5 +1,11 @@
 ﻿@page "/"
+@using SmGenPar.Wasm.Components
+@using SmGenPar.Logic.Models
+
 
 @code {
+
+    readonly Type _modelType = typeof(Extend);
     
+    Extend Model { get; set; } = new Extend();
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Numerics;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
 namespace SmGenPar.Logic.Models;
@@ -8,14 +9,14 @@ namespace SmGenPar.Logic.Models;
 public record Extend
 {
     [Display(Name = "Data e Hora")]
-    public DateTime DataHora { get; set; }
+    public DateTime? DataHora { get; set; }
 
     [Display(Name = "Postos Horarios")]
     public PostosHorarios? PostosHorarios { get; set; }
 
     [Display]
     [Length(12)]
-    public DateOnly[]? SelfRead { get; set; }
+    public DateOnly?[]? SelfRead { get; set; }
 
     [Display(Name = "Codigo do Consumidor")]
     public NumeroTrafo? NumeroTrafo { get; set; }

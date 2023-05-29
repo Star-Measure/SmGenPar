@@ -6,7 +6,7 @@ public static class MostradorExtension
 {
     public static MostradoresFlag BitMapping(string code)
     {
-        int index = code switch
+        var index = code switch
         {
             "1" => 0,
             "2" => 1,
@@ -232,6 +232,4 @@ public enum MostradoresFlag
     EnergiaReativaCapacitivaQ2NoHorárioReservado             = 66,
     EnergiaReativaCapacitivaQ2NoHorárioForaDaPonta           = 67,
     Últimos12ValoresCalculadosDeDrpDrc                       = 68,
-
-    Count
 }

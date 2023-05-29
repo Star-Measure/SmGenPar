@@ -1,46 +1,69 @@
 ﻿@page "/Parametros/Extend/{ParameterName}"
 @using System.Text.Json
 @using System.Text.Json.Serialization
+@using Microsoft.AspNetCore.Components.Rendering
 @using Newtonsoft.Json
-@using SmGenPar.Logic.Models
+@using SmGenPar.Logic.Reflection
 @using SmGenPar.Wasm.Components
+@using SMIO.Types
 @using JsonSerializer = System.Text.Json.JsonSerializer
-@using SmGenPar.Wasm
+@using System.Drawing
+@using System.Numerics
 
-<h3>ParameterNames Extend</h3>
 
-@(_renderFragments![ParameterName!])
+<form class="MeterForm" onsubmit="@OnSubmit">
+    @_renderFragments![ParameterName!]
+    <button type="submit">Submit</button>
+</form>
 
-<button type="submit" @onclick="OnSubmit">Submit</button>
+<style>
+    .MeterForm {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        width: 100%;
+        height: 100%;
+        font-family: Perpetua, serif;
+    }
+    
+    input:invalid {
+        outline: 2px solid darkred;
+    }
+</style>
 
 @code {
+
+    (double X, double Y) MouseDownPoint { get; set; }
+    (double X ,double Y) MouseUpPoint { get; set; }
+
+    (double X, double Y, double Width, double High) CalculatePlane() =>
+        new(Math.Min(MouseDownPoint.X, MouseUpPoint.X),
+            Math.Min(MouseDownPoint.Y, MouseUpPoint.Y),
+            Math.Abs(MouseDownPoint.X - MouseUpPoint.X),
+            Math.Abs(MouseDownPoint.Y - MouseUpPoint.Y));
+
 
     [Parameter]
     public string? ParameterName { get; set; }
 
-    static readonly Extend? Model = (Extend)ObjectFormRender.Models["Extend"];
-    
+    static readonly Extend? Model = (Extend)FormRender.CachedModels["Extend"];
+
     Dictionary<string, RenderFragment>? _renderFragments;
+
+    readonly FormRender _formsRenderer = new();
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _renderFragments = ObjectFormRender.RenderModelProperties(Model!);
+        _formsRenderer.AddRenderForType<Mostrador>(MostradorFragment);
+        _formsRenderer.AddRenderForType<ReposicaoDemanda>(ReposicaoFragment);
+        _renderFragments = _formsRenderer.RenderModelProperties(Model!);
     }
 
-    void OnSubmit()
+    static void OnSubmit()
     {
-        Console.WriteLine(Model);
-    }
-    
-    static void OnValidSubmit(EditContext editContext)
-    {
-        Console.WriteLine(
-            JsonSerializer.Serialize(editContext.Model)
-            );
-        Console.WriteLine(
-            SerializeToXml(editContext.Model, "Extend")
-            );
+        Console.WriteLine(SerializeToXml(Model!, "Extend"));
     }
 
     static string SerializeToXml(object obj, string rootName = "root")
@@ -53,6 +76,99 @@
         var json = JsonSerializer.Serialize(obj, jsonOptions);
         var doc = JsonConvert.DeserializeXNode(json, rootName);
         return doc.ToString();
+    }
+
+
+    void ReposicaoFragment(
+        RenderTreeBuilder builder,
+        string id,
+        string name,
+        Action<ChangeEventArgs> callback,
+        Attribute[] attributes)
+    {
+        var properties = typeof(ReposicaoDemanda).GetProperties();
+
+        for (var i = 0; i < properties.Length; i++) {
+            var month = i + 1;
+            var propertyInfo = properties[i];
+            var newId = $"{id}.{propertyInfo.Name}";
+            builder.AddLabelElement(newId, propertyInfo.Name);
+            builder.OpenElement(0, "div");
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "class", "form-control");
+            builder.AddAttribute(2, "id", $"{id}.{propertyInfo.Name}");
+            builder.AddAttribute(3, "name", propertyInfo.Name);
+            builder.AddAttribute(4, "type", "number");
+            builder.AddAttribute(6, "min", 1);
+            builder.AddAttribute(7, "max", DateTime.DaysInMonth(DateTime.UtcNow.Year, month));
+            builder.AddAttribute(8, "onchange", (ChangeEventArgs changeEventArgs) =>
+            {
+                var value = (string?)changeEventArgs?.Value;
+                if (string.IsNullOrWhiteSpace(value)) {
+                    return;
+                }
+                var day = byte.Parse(value);
+
+                var reposicao = _formsRenderer.ElementValue
+                    .GetValueRefOrCreate(id, () => new ReposicaoDemanda());
+
+                propertyInfo.SetValue(reposicao, day);
+                callback(new ChangeEventArgs
+                {
+                    Value = reposicao
+                });
+            });
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+    }
+
+    void MostradorFragment(
+        RenderTreeBuilder builder,
+        string id,
+        string name,
+        Action<ChangeEventArgs> callback,
+        Attribute[] attributes)
+    {
+        builder.OpenElement(0, "fieldset");
+        builder.AddAttribute(1, "class", "MeterForm");
+        var enumNames = Enum.GetNames<MostradoresFlag>();
+        var enumValues = Enum.GetValues<MostradoresFlag>();
+
+        for (var index = 0; index < enumNames.Length; index++) {
+            var enumName = enumNames[index];
+            var enumValue = enumValues[index];
+
+            builder.OpenElement(2, "div");
+            var newId = $"{id}.{enumName}";
+            builder.OpenElement(3, "input");
+            builder.AddAttribute(4, "id", newId);
+            builder.AddAttribute(5, "name", newId);
+            builder.AddAttribute(6, "type", "checkbox");
+            builder.AddAttribute(7, "checked", false);
+            builder.AddAttribute(8, "onchange", (ChangeEventArgs changeEventArgs) =>
+            {
+                var mostradores = (Mostrador)_formsRenderer.ElementValue
+                    .GetValueOrDefault(id, default(Mostrador));
+
+                var bit = changeEventArgs.Value as bool? ?? false;
+                mostradores = mostradores.SetBit((int)enumValue, bit);
+
+                _formsRenderer.ElementValue[id] = mostradores;
+                callback(new ChangeEventArgs
+                {
+                    Value = mostradores
+                });
+            });
+
+            builder.CloseElement();
+            const string htmlSpace = "&nbsp;";
+            builder.AddMarkupContent(9, htmlSpace);
+            builder.AddLabelElement(newId, enumName);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
     }
 
 }

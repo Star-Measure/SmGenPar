@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
 namespace SmGenPar.Logic.Models;
@@ -13,7 +14,7 @@ public class Qee
     [Display(Name = "Tipo de Ligação")]
     public QeeTipoLigacao TipoLigacao   { get; set; }
 
-    [PublicAPI]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum QeeTipoLigacao
     {
         Indefinido,

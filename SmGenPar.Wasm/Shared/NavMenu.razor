@@ -2,6 +2,7 @@
 @using SmGenPar.Logic.Reflection
 @using SmGenPar.Wasm.Components
 @using System.Reflection
+@using System.ComponentModel.DataAnnotations
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">
@@ -26,11 +27,14 @@
             var properties = extendType.GetPropertiesCached();
             
             foreach (var propertyInfo in properties) {
+                var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
+                var name = displayAttribute?.Name ?? propertyInfo.Name;
+                
                 var pageRef = $"Parametros/Extend/{propertyInfo.Name}";
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="@pageRef">
                         <span class="oi oi-list-rich" aria-hidden="true"></span>
-                        @propertyInfo.Name
+                        @name
                     </NavLink>
                 </div>
             }

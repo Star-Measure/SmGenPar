@@ -22,7 +22,7 @@ public record Extend
     [Display(Name = "Codigo do Consumidor")]
     public NumeroTrafo? NumeroTrafo { get; set; }
     
-    public Mostrador Mostradores { get; set; }
+    public Mostrador? Mostradores { get; set; }
     
     public Feriados? Feriados { get; set; }
     

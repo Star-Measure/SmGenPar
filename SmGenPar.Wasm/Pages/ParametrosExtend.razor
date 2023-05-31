@@ -76,20 +76,31 @@
 
     async void OnSubmit()
     {
+        Console.WriteLine(Model);
+        const string rootName = "Extend";
         try {
-            var xDoc = SerializeToXml(Model, "Extend");
+            var xDoc = SerializeToXml(Model, rootName);
             RemoveEmptyTags(xDoc);
             var stream = new MemoryStream();
-            xDoc.Save(stream);
-            stream.Seek(0, SeekOrigin.Begin);
-            await DownloadFileFromStream(stream, "ParametrosExtend.xml");
+            try {
+                xDoc.Save(stream);
+            }
+            catch (InvalidOperationException) {
+                var rootElement = XElement.Parse(@$"<{rootName}/>");
+                stream.Seek(0, SeekOrigin.Begin);
+                rootElement.Save(stream);
+            }
+            finally {
+                stream.Seek(0, SeekOrigin.Begin);
+                await DownloadFileFromStream(stream, "ParametrosExtend.xml");
+            }
         }
         catch (Exception ex) {
             Console.Error.WriteLine(ex);
         }
     }
 
-    static XDocument SerializeToXml(object? obj, string rootName = "root")
+    static XElement SerializeToXml(object? obj, string rootName = "root")
     {
         var jsonOptions = new JsonSerializerOptions
         {
@@ -98,7 +109,7 @@
         };
         var json = JsonSerializer.Serialize(obj, jsonOptions);
         var doc = JsonConvert.DeserializeXNode(json, rootName);
-        return doc;
+        return doc.Root!;
     }
 
 

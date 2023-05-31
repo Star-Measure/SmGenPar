@@ -106,6 +106,7 @@ public class FormRender
         builder.AddAttribute(sequence += 1, "id", id);
         builder.AddAttribute(sequence += 1, "type", type);
         builder.AddAttribute(sequence += 1, "class", "form-control");
+        builder.AddAttribute(sequence += 1, "value", ElementValue.GetValueOrDefault(id!));
 
         if (requiredAttribute is not null) {
             builder.AddAttribute(sequence += 1, "required", true);
@@ -234,7 +235,7 @@ public class FormRender
         Action<ChangeEventArgs>? callback = null,
         params Attribute[]       attributes)
     {
-        IList? array = null;
+        var array = ElementValue.GetValueOrDefault(id) as IList;
         var elementType = type.GetElementType() ?? typeof(object);
         var lenghtAttribute = attributes.OfType<LengthAttribute>().FirstOrDefault();
 
@@ -242,7 +243,8 @@ public class FormRender
             var index = i;
             RenderElementForType(builder, $"{id}[{i}]", elementType, args =>
             {
-                array ??= Array.CreateInstance(elementType, lenghtAttribute.Lenght);
+                Array ArrayFactory() => Array.CreateInstance(elementType, lenghtAttribute.Lenght);
+                array ??= (IList)ElementValue.GetValueRefOrCreate(id, ArrayFactory)!;
                 var converter = TypeDescriptor.GetConverter(elementType);
 
                 var argValue = args.Value;
@@ -276,7 +278,7 @@ public class FormRender
         Action<ChangeEventArgs>? callback = null,
         params Attribute[]       attributes)
     {
-        object? instance = null;
+        var instance = ElementValue.GetValueOrDefault(id);
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "form-control");
         foreach (var propertyInfo in type.GetPropertiesCached()) {
@@ -291,7 +293,8 @@ public class FormRender
                 propertyInfo.PropertyType,
                 args =>
                 {
-                    instance ??= Activator.CreateInstance(type)!;
+                    object? ObjectFactory() => Activator.CreateInstance(type);
+                    instance ??= ElementValue!.GetValueRefOrCreate(id, ObjectFactory);
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
                     var argValue = args.Value!;
                     var argType = argValue!.GetType();

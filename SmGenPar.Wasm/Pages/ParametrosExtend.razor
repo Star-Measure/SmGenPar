@@ -9,6 +9,11 @@
 @using JsonSerializer = System.Text.Json.JsonSerializer
 @using System.Drawing
 @using System.Numerics
+@using System.Text
+@using System.Xml
+@using System.Xml.Linq
+
+@inject IJSRuntime Js
 
 
 <form class="MeterForm" onsubmit="@OnSubmit">
@@ -34,16 +39,6 @@
 
 @code {
 
-    (double X, double Y) MouseDownPoint { get; set; }
-    (double X ,double Y) MouseUpPoint { get; set; }
-
-    (double X, double Y, double Width, double High) CalculatePlane() =>
-        new(Math.Min(MouseDownPoint.X, MouseUpPoint.X),
-            Math.Min(MouseDownPoint.Y, MouseUpPoint.Y),
-            Math.Abs(MouseDownPoint.X - MouseUpPoint.X),
-            Math.Abs(MouseDownPoint.Y - MouseUpPoint.Y));
-
-
     [Parameter]
     public string? ParameterName { get; set; }
 
@@ -61,12 +56,40 @@
         _renderFragments = _formsRenderer.RenderModelProperties(Model!);
     }
 
-    static void OnSubmit()
+
+    async Task DownloadFileFromStream(Stream stream, string fileName)
     {
-        Console.WriteLine(SerializeToXml(Model!, "Extend"));
+        using var streamRef = new DotNetStreamReference(stream);
+
+        await Js.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 
-    static string SerializeToXml(object obj, string rootName = "root")
+    static void RemoveEmptyTags(XContainer xNode)
+    {
+        var xElements = xNode.Descendants();
+
+        bool IsEmptyTag(XElement childNode) =>
+            childNode is null or { IsEmpty: true } || string.IsNullOrWhiteSpace(childNode.Value);
+
+        xElements.Where(IsEmptyTag).Remove();
+    }
+
+    async void OnSubmit()
+    {
+        try {
+            var xDoc = SerializeToXml(Model, "Extend");
+            RemoveEmptyTags(xDoc);
+            var stream = new MemoryStream();
+            xDoc.Save(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            await DownloadFileFromStream(stream, "ParametrosExtend.xml");
+        }
+        catch (Exception ex) {
+            Console.Error.WriteLine(ex);
+        }
+    }
+
+    static XDocument SerializeToXml(object? obj, string rootName = "root")
     {
         var jsonOptions = new JsonSerializerOptions
         {
@@ -75,7 +98,7 @@
         };
         var json = JsonSerializer.Serialize(obj, jsonOptions);
         var doc = JsonConvert.DeserializeXNode(json, rootName);
-        return doc.ToString();
+        return doc;
     }
 
 

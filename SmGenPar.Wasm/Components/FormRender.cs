@@ -235,13 +235,10 @@ public class FormRender
         params Attribute[]       attributes)
     {
         IList? array = null;
-        //builder.OpenElement(0, "div");
-        //builder.AddAttribute(1, "style", "margin: 1em;");
         var elementType = type.GetElementType() ?? typeof(object);
         var lenghtAttribute = attributes.OfType<LengthAttribute>().FirstOrDefault();
 
         for (var i = 0; i < lenghtAttribute?.Lenght; ++i) {
-            //builder.OpenElement(2, "div");
             var index = i;
             RenderElementForType(builder, $"{id}[{i}]", elementType, args =>
             {
@@ -268,11 +265,7 @@ public class FormRender
                     Value = array
                 });
             });
-
-            //builder.CloseElement();
         }
-
-        //builder.CloseElement();
     }
 
     void RenderObject(

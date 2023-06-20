@@ -15,6 +15,9 @@
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 7.0.100
+      # Test
+      - name: List Directories
+        run: ls
       # New nuget Config
       - name: New Nuget Config
         run: dotnet new nugetconfig

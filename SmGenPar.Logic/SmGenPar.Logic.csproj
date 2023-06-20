@@ -9,10 +9,7 @@
     <ItemGroup>
       <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
       <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta07" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\Libraries\IO\SMIO\SMIO\SMIO.csproj" />
+      <PackageReference Include="SMIO" Version="1.0.0" />
     </ItemGroup>
 
 </Project>

@@ -1,9 +1,6 @@
 using JetBrains.Annotations;
-using SMIO.Collections;
 using SMIO.ValueTypes;
-
 namespace SmGenPar.Logic.Types;
-
 [PublicAPI]
 public static class SelfReadingExtensions
 {

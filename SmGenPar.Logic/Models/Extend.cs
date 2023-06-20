@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using SMIO.Types;
+using SMIO.ValueTypes;
 
 namespace SmGenPar.Logic.Models;
 

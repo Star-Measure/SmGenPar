@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <RestoreAdditionalProjectSources>/LocalPackages</RestoreAdditionalProjectSources>
+        <RestoreAdditionalProjectSources>../../LocalPackages</RestoreAdditionalProjectSources>
     </PropertyGroup>
 
     <ItemGroup>

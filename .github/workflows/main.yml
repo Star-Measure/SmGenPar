@@ -15,6 +15,9 @@
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 7.0.100
+      # New nuget Config
+      - name: New Nuget Config
+        run: dotnet new nugetconfig
       # publishes Blazor project to the release-folder
       - name: Publish .NET Core Project
         run: dotnet publish -c Release -o release --nologo

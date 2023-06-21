@@ -16,6 +16,8 @@
         with:
           dotnet-version: 7.0.100
       # Adds local packages as nuget source
+      - name: Nuget Clear
+        run: nuget locals all -clear
       - name: "Set NuGET Source"
         run: nuget sources Add -Name "Local" -Source ./LocalPackages
       # publishes Blazor project to the release-folder

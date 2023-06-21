@@ -20,6 +20,8 @@
         run: dotnet publish ./SmGenPar.Logic -c Release -o release --nologo
       - name: Publish BlazorWasm
         run: dotnet publish ./SmGenPar.Wasm -c Release -o release --nologo
+      - name: Dotnet restore
+        run: dotnet restore
       # changes the base-tag in index.html to match GitHub Pages subdirectory
       - name: Change base-tag in index.html 
         run: sed -i 's/<base href="\/" \/>/<base href="\/SmGenPar\/" \/>/g' release/wwwroot/index.html

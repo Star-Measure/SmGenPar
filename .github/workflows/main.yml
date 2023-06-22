@@ -22,9 +22,9 @@
         run: nuget sources Add -Name "Local" -Source ./LocalPackages
       # publishes Blazor project to the release-folder
       - name: Publish Class Library
-        run: dotnet publish ./SmGenPar.Logic -c Release -o release --nologo
+        run: dotnet publish ./SmGenPar.Logic -c Debug -o release --nologo
       - name: Publish BlazorWasm
-        run: dotnet publish ./SmGenPar.Wasm -c Release -o release --nologo
+        run: dotnet publish ./SmGenPar.Wasm -c Debug -o release --nologo
       # changes the base-tag in index.html to match GitHub Pages subdirectory
       - name: Change base-tag in index.html 
         run: sed -i 's/<base href="\/" \/>/<base href="\/SmGenPar\/" \/>/g' release/wwwroot/index.html

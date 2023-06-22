@@ -14,20 +14,16 @@
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 7.0.100
+          dotnet-version: 7.0.x
+      # Install dotnet wasm buildtools workload
+      - name: Install .NET WASM Build Tools
+        run: dotnet workload install wasm-tools
       # Adds local packages as nuget source
       - name: Set NuGET Source
         run: nuget sources Add -Name "Local" -Source ./LocalPackages
       # publishes Blazor project to the release-folder
       - name: Publish BlazorWasm
-        run: dotnet publish -c Release -o release --nologo
-      # changes the base-tag in index.html to match GitHub Pages subdirectory
-      - name: Change base-tag in index.html 
-        run: sed -i 's/<base href="\/" \/>/<base href="\/SmGenPar\/" \/>/g' release/wwwroot/index.html
-      # add .nojekyll file to tell GitHub pages to not treat this as a Jekyll project. 
-      # (Allow files and folders starting with an underscore)
-      - name: Add .nojekyll file
-        run: touch release/wwwroot/.nojekyll
+        run: dotnet publish ./SmGenPar.Wasm -c Release -o release -p:GHPages=true --nologo
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:

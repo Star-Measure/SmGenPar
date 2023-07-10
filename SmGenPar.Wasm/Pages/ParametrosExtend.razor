@@ -6,11 +6,8 @@
 @using SmGenPar.Logic.Reflection
 @using SmGenPar.Wasm.Components
 @using JsonSerializer = System.Text.Json.JsonSerializer
-@using System.Drawing
-@using System.Numerics
-@using System.Text
-@using System.Xml
 @using System.Xml.Linq
+@using System.Xml.Serialization
 @using SMIO.ValueTypes
 
 @inject IJSRuntime Js
@@ -68,7 +65,7 @@
     {
         var xElements = xNode.Descendants();
 
-        bool IsEmptyTag(XElement childNode) =>
+        static bool IsEmptyTag(XElement childNode) => 
             childNode is null or { IsEmpty: true } || string.IsNullOrWhiteSpace(childNode.Value);
 
         xElements.Where(IsEmptyTag).Remove();
@@ -100,16 +97,15 @@
         }
     }
 
-    static XElement SerializeToXml(object? obj, string rootName = "root")
+    static XDocument SerializeToXml(object? obj, string rootName = "root")
     {
-        var jsonOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            WriteIndented = true,
-        };
-        var json = JsonSerializer.Serialize(obj, jsonOptions);
-        var doc = JsonConvert.DeserializeXNode(json, rootName);
-        return doc.Root!;
+        var json = JsonSerializer.Serialize(obj);
+
+        Console.WriteLine(json);
+
+        var xel = JsonConvert.DeserializeXNode(json, rootName);
+
+        return xel;
     }
 
 
@@ -147,8 +143,7 @@
                     .GetValueRefOrCreate(id, () => new ReposicaoDemanda());
 
                 propertyInfo.SetValue(reposicao, day);
-                callback(new ChangeEventArgs
-                {
+                callback(new ChangeEventArgs {
                     Value = reposicao
                 });
             });
@@ -189,8 +184,7 @@
                 mostradores = mostradores.SetBit((int)enumValue, bit);
 
                 _formsRenderer.ElementValue[id] = mostradores;
-                callback(new ChangeEventArgs
-                {
+                callback(new ChangeEventArgs {
                     Value = mostradores
                 });
             });

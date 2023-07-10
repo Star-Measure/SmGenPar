@@ -27,7 +27,8 @@ jobs:
         
       # Adds LocalPackages as a nuget source   
       - name: Add Local Nuget Packages folder
-        run: dotnet nuget add source ./LocalPackages --name local
+        run: cp ./LocalPackages release/LocalPackages && 
+             dotnet nuget add source release/LocalPackages --name local
          
       # Publishes Blazor project to the release-folder
       - name: Publish .NET Core Project

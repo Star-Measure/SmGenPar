@@ -118,7 +118,7 @@
     {
         var properties = typeof(ReposicaoDemanda).GetProperties();
 
-        for (var i = 0; i < properties.Length; i++) {
+        for (var i = 0; i < 12; i++) {
             var month = i + 1;
             var propertyInfo = properties[i];
             var newId = $"{id}.{propertyInfo.Name}";

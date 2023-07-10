@@ -22,7 +22,7 @@ public delegate void FormsRenderer(
 [PublicAPI]
 public class FormRender
 {
-    public static readonly Dictionary<string, object> CachedModels = new()
+    public readonly static Dictionary<string, object> CachedModels = new()
     {
         { "Extend", new Extend() },
     };
@@ -51,6 +51,7 @@ public class FormRender
     public Dictionary<string, RenderFragment>? RenderModelProperties(object model)
     {
         var modelType = model.GetType();
+
         var props = modelType.GetPropertiesCached();
 
         var span = props.AsSpan();
@@ -146,13 +147,13 @@ public class FormRender
         Type                    type,
         Action<ChangeEventArgs> callback,
         params Attribute[]      attributes)
-    {
-        var typeCode = Type.GetTypeCode(type);
-        var name = type.Name;
 
+    {
         if (Nullable.GetUnderlyingType(type) is {} underlyingType) {
             type = underlyingType;
         }
+        var typeCode = Type.GetTypeCode(type);
+        var name = type.Name;
         if (_customTypeRenderFragment.TryGetValue(type, out var customRenderer)) {
             customRenderer(builder, id, name, callback, attributes);
         }

@@ -10,6 +10,7 @@ namespace SmGenPar.Logic.Models;
 public record ParametrosMedicaoIndireta : IXElementParsable<ParametrosMedicaoIndireta>
 {
     public SaidaUsuario SaidaDeUsuario { get; set; }
+    
     [Length(2)]
     public int?[]? Kp { get; set; }
 

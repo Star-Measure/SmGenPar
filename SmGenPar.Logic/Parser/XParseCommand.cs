@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Models;

@@ -14,7 +14,7 @@ public record Extend : IXElementParsable<Extend>
     public PostosHorarios? PostosHorarios { get; set; }
 
     [Length(12)]
-    public DateOnly?[]? SelfRead { get; set; }
+    public DateTime?[]? SelfRead { get; set; }
 
     [Display(Name = "Codigo do Consumidor")]
     public NumeroTrafo? NumeroTrafo { get; set; }
@@ -51,7 +51,7 @@ public record Extend : IXElementParsable<Extend>
         var xModo2 = element?.Element("Modo2");
 
         var arrSelfRead = xSelfRead?
-            .Select(XParser.XParseNullable<DateOnly>)
+            .Select(XParser.XParseNullable<DateTime>)
             .Where(x => x.HasValue)
             .Select(x => x.Unwrap())
             .ToArray();

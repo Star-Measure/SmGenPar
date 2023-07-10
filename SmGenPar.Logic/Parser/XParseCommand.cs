@@ -185,14 +185,20 @@ namespace SmGenPar.Logic.Parser;
     public static Either<ParseResult, (EB03 First, EB03? Second)> XParseSelfRead(XElement element)
     {
         var arrSelfRead = element.Elements(nameof(Extend.SelfRead))
-            .Select(XParser.XParse<DateOnly>)
+            .Select(XParser.XParse<DateTime>)
             .Where(x => x.HasValue)
             .Select(x => x.Unwrap())
-            .Select(BcdDate.FromDateTime)
-            .ToArray();
+            .Select(SelfRead.FromDateTime);
 
-        var first  = arrSelfRead.AsSpan(0, 8);
-        var second = arrSelfRead.AsSpan(8, 16);
+        Span<SelfRead> span = stackalloc SelfRead[16];
+
+        int i = 0;
+        foreach (var bcdDate in arrSelfRead) {
+            span[i++] = bcdDate;
+        }
+
+        var first  = span[..8];
+        var second = span[8..];
 
         var eb03First = new EB03 {
             Modo         = ModoComando.Escrita,
@@ -204,7 +210,7 @@ namespace SmGenPar.Logic.Parser;
             ModoInsercao = ModoInsercao.Sobrescreve,
             SelfRead     = ReinterpretCast<ConjuntoSelfRead>.GetRef(second),
         };
-        
+
         return new Either<ParseResult, (EB03 First, EB03? Second)>((eb03First, eb03Second));
     }
 }

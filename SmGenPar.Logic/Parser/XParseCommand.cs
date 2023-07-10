@@ -182,7 +182,7 @@ namespace SmGenPar.Logic.Parser;
         }
         return new Either<ParseResult, IReadOnlyCollection<AB92>>(commands);
     }
-    public static Either<ParseResult, (EB03 First, EB03? Second)> XParseSelfRead(XElement element)
+    public static Either<ParseResult, (EB03 First, Option<EB03> Second)> XParseSelfRead(XElement element)
     {
         var arrSelfRead = element.Elements(nameof(Extend.SelfRead))
             .Select(XParser.XParse<DateTime>)
@@ -192,9 +192,9 @@ namespace SmGenPar.Logic.Parser;
 
         Span<SelfRead> span = stackalloc SelfRead[16];
 
-        int i = 0;
+        int selfReadCount = 0;
         foreach (var bcdDate in arrSelfRead) {
-            span[i++] = bcdDate;
+            span[selfReadCount++] = bcdDate;
         }
 
         var first  = span[..8];
@@ -205,12 +205,14 @@ namespace SmGenPar.Logic.Parser;
             ModoInsercao = ModoInsercao.Sobrescreve,
             SelfRead     = ReinterpretCast<ConjuntoSelfRead>.GetRef(first),
         };
+        if (selfReadCount <= 8) {
+            return new Either<ParseResult, (EB03, Option<EB03>)>((eb03First, Option.None));
+        }
         var eb03Second = new EB03 {
             Modo         = ModoComando.Escrita,
             ModoInsercao = ModoInsercao.Sobrescreve,
             SelfRead     = ReinterpretCast<ConjuntoSelfRead>.GetRef(second),
         };
-
-        return new Either<ParseResult, (EB03 First, EB03? Second)>((eb03First, eb03Second));
+        return new Either<ParseResult, (EB03, Option<EB03>)>((eb03First, eb03Second));
     }
 }

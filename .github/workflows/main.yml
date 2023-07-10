@@ -27,7 +27,7 @@ jobs:
         
       # Adds LocalPackages as a nuget source   
       - name: Add Local Nuget Packages folder
-        run: mkdirs release/LocalPackages &&
+        run: mkdir release/LocalPackages &&
              cp -r ./LocalPackages release/LocalPackages && 
              dotnet nuget add source release/LocalPackages --name local
          

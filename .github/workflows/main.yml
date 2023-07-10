@@ -26,11 +26,8 @@ jobs:
         run: dotnet workload install wasm-tools
         
       # Adds LocalPackages as a nuget source   
-      - name: Add Local Nuget Packages folder
-        run: mkdir release &&
-             mkdir release/LocalPackages &&
-             cp -r ./LocalPackages release/LocalPackages && 
-             dotnet nuget add source release/LocalPackages --name local
+      - name: Add Local Nugets to source
+        run: cp -r ./LocalPackages /home/runner/.nuget/NuGet && 
          
       # Publishes Blazor project to the release-folder
       - name: Publish .NET Core Project

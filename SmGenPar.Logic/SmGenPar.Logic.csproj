@@ -9,12 +9,11 @@
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
-      <PackageReference Include="SMIO" Version="1.0.0" />
-      <PackageReference Include="SMResultTypes" Version="1.0.0.2" />
     </ItemGroup>
     <ItemGroup>
-      <Reference Include="SMResultTypes">
-        <HintPath>..\..\Libraries\Data\Data\bin\Debug\net7.0\SMResultTypes.dll</HintPath>
-      </Reference>
+      <ProjectReference Include="..\..\Libraries\IO\SMIO\SMIO\SMIO.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Types\" />
     </ItemGroup>
 </Project>

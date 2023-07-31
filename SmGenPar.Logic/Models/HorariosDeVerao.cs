@@ -10,10 +10,10 @@ namespace SmGenPar.Logic.Models;
 [PublicAPI]
 public record HorariosDeVerao
 {
-    [Length(15)]
     [Display(Name = "")]
     [XmlArrayItem("Periodo")]
     [XmlArray("Periodo")]
+    [Length(15)]
     public Periodo[]? Periodos { get; set; }
 
     public static Either<ParseResult,HorariosDeVerao> FromXElement(XElement? element)
@@ -29,7 +29,7 @@ public record HorariosDeVerao
     }
 }
 [PublicAPI]
-public record struct Periodo
+public record struct Periodo 
 {
     public DateOnly? Inicio { get; set; }
     public DateOnly? Fim    { get; set; }

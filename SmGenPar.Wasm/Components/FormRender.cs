@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using SmGenPar.Logic.Models;
-using SmGenPar.Logic.Reflection;
+using SmGenPar.Logic.Cache;
 
 namespace SmGenPar.Wasm.Components;
 

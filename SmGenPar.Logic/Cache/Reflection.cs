@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using static System.Runtime.InteropServices.CollectionsMarshal;
 
-namespace SmGenPar.Logic.Reflection;
+namespace SmGenPar.Logic.Cache;
 
 [PublicAPI]
 public static class Extensions

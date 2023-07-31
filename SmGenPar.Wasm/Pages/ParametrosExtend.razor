@@ -3,7 +3,7 @@
 @using System.Text.Json.Serialization
 @using Microsoft.AspNetCore.Components.Rendering
 @using Newtonsoft.Json
-@using SmGenPar.Logic.Reflection
+@using SmGenPar.Logic.Cache
 @using SmGenPar.Wasm.Components
 @using JsonSerializer = System.Text.Json.JsonSerializer
 @using System.Xml.Linq
@@ -48,7 +48,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _formsRenderer.AddRenderForType<Mostrador>(MostradorFragment);
+        _formsRenderer.AddRenderForType<Mostradores>(MostradorFragment);
         _formsRenderer.AddRenderForType<ReposicaoDemanda>(ReposicaoFragment);
         _renderFragments = _formsRenderer.RenderModelProperties(Model!);
     }
@@ -177,8 +177,8 @@
             builder.AddAttribute(7, "checked", false);
             builder.AddAttribute(8, "onchange", (ChangeEventArgs changeEventArgs) =>
             {
-                var mostradores = (Mostrador)_formsRenderer.ElementValue
-                    .GetValueOrDefault(id, default(Mostrador));
+                var mostradores = (Mostradores)_formsRenderer.ElementValue
+                    .GetValueOrDefault(id, default(Mostradores));
 
                 var bit = changeEventArgs.Value as bool? ?? false;
                 mostradores = mostradores.SetBit((int)enumValue, bit);

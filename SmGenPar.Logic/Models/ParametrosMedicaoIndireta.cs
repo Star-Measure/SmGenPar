@@ -2,6 +2,7 @@
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
+using SMIO.ValueTypes;
 using SMResultTypes;
 
 namespace SmGenPar.Logic.Models;
@@ -16,16 +17,6 @@ public record ParametrosMedicaoIndireta : IXElementParsable<ParametrosMedicaoInd
 
     public int NmrCasasDecimaisEnergia { get; set; }
     public int NmrCasasDecimaisDemanda { get; set; }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum SaidaUsuario
-    {
-        MonoDirecional = 0,
-        Estendida      = 1,
-        Mista          = 3,
-        SER311         = 5,
-        Serial_II_PIMA = 6,
-    }
 
     public static Either<ParseResult, ParametrosMedicaoIndireta> FromXElement(XElement? element)
     {

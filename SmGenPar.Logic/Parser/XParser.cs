@@ -62,7 +62,7 @@ namespace SmGenPar.Logic.Parser;
                 return ParseResult.ParseError;
             }
         }
-        return Unit.Default;
+        return Unit.Value;
     }
     public static Either<ParseResult, Unit> XParseNullable<TParsable>(
         Span<XElement> xElements,
@@ -78,6 +78,6 @@ namespace SmGenPar.Logic.Parser;
                 return ParseResult.ParseError;
             }
         }
-        return Unit.Default;
+        return Unit.Value;
     }
 }

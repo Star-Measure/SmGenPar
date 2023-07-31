@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
+using SMIO.ValueTypes;
 using SMResultTypes;
 
 namespace SmGenPar.Logic.Models;
@@ -16,27 +17,15 @@ public class Qee : IXElementParsable<Qee>
     public float TensaoNominal { get; set; }
 
     [Display(Name = "Tipo de Ligação")]
-    public QeeTipoLigacao TipoLigacao { get; set; }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum QeeTipoLigacao
-    {
-        Indefinido,
-        Estrela,
-        Delta,
-        Bifasico,
-        Monofasico,
-        SerieOuParalelo,
-        DeltaAlternado,
-    }
-
+    public TipoLigacaoQee TipoLigacao { get; set; }
+    
     public static Either<ParseResult, Qee> FromXElement(XElement? element)
     {
         var xTensaoNominal = element?.Element("TensaoNominal");
         var xTipoLigacao = element?.Element("TipoLigacao");
 
         var tensaoNominal = XParser.XParse<float>(xTensaoNominal, CultureInfo.InvariantCulture);
-        var tipoLigacao = XParser.XParseEnum<QeeTipoLigacao>(xTipoLigacao);
+        var tipoLigacao = XParser.XParseEnum<TipoLigacaoQee>(xTipoLigacao);
 
         var qee = new Qee {
             TensaoNominal = tensaoNominal.GetValueOrDefault(),

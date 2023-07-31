@@ -1,10 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
 using SMIO.ValueTypes;
-using SMResultTypes;
 
 namespace SmGenPar.Logic.Models;
 

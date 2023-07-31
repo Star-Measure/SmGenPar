@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;

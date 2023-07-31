@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
@@ -8,7 +7,6 @@ using SmGenPar.Logic.Models;
 using SMIO.Buffers.AB;
 using SMIO.Buffers.Abnt;
 using SMIO.Buffers.EB;
-using SMIO.Collections;
 using SMIO.ValueTypes;
 using SMResultTypes;
 using static SMIO.SpanExtension;
@@ -323,11 +321,11 @@ namespace SmGenPar.Logic.Parser;
         Span<BcdDateDMY> fourth = stackalloc BcdDateDMY[packetSize];
         Span<BcdDateDMY> fifth  = stackalloc BcdDateDMY[feriadoCount % (packetSize * 4)];
 
-        CopyShiftSrc(ref span, first);
-        CopyShiftSrc(ref span, second);
-        CopyShiftSrc(ref span, third);
-        CopyShiftSrc(ref span, fourth);
-        CopyShiftSrc(ref span, fifth);
+        ReadFrom(ref span, first);
+        ReadFrom(ref span, second);
+        ReadFrom(ref span, third);
+        ReadFrom(ref span, fourth);
+        ReadFrom(ref span, fifth);
 
         var lst = new List<Abnt9832> {
             new Abnt9832(0x999990) {
@@ -390,8 +388,8 @@ namespace SmGenPar.Logic.Parser;
         Span<HorarioVerao> first      = stackalloc HorarioVerao[packetSize];
         Span<HorarioVerao> second     = stackalloc HorarioVerao[horarioVeraoCount % packetSize];
 
-        CopyShiftSrc(ref span, first);
-        CopyShiftSrc(ref span, second);
+        ReadFrom(ref span, first);
+        ReadFrom(ref span, second);
 
         var lst = new List<AB64> {
             new AB64(0x999990) {

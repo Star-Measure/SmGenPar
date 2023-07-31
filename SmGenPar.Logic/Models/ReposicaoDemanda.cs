@@ -1,6 +1,5 @@
 ﻿using System.Xml.Linq;
 using JetBrains.Annotations;
-using SmGenPar.Logic.Models;
 using SmGenPar.Logic.Parser;
 using SMResultTypes;
 

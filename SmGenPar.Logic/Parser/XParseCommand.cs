@@ -4,33 +4,31 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Models;
+using SMIO.Buffers;
 using SMIO.Buffers.AB;
 using SMIO.Buffers.Abnt;
 using SMIO.Buffers.EB;
 using SMIO.ValueTypes;
 using SMResultTypes;
-using static SMIO.SpanExtension;
-using Postos = SMIO.Collections.Postos;
+using static SMIO.SpanExtensions;
+using Postos = SMIO.ValueTypes.Postos;
 
 namespace SmGenPar.Logic.Parser;
 
 [PublicAPI] public static class XParseCommand
 {
-    public static Option<XElement> ElementOption(XElement element, string name) =>
-        Option.Some(element?.Element(name));
-
-    public static IEnumerable<ComandoAbnt> XParseParameterPage(XElement parameterPage)
+    [PublicAPI] public static IEnumerable<MeterCommand> XParseParameterPage(XElement parameterPage)
     {
-        var postosHorarios     = XParsePostosHorarios(parameterPage);
-        var mostradoresAtivos  = XParseMostradoresAtivos(parameterPage);
-        var selRead            = XParseSelfRead(parameterPage);
-        var feriados           = XParseFeriados(parameterPage);
-        var horarioVerao       = XParseHorarioVerao(parameterPage);
-        var qee                = XParseQEE(parameterPage);
-        var tarifaReativos     = XParseTarifaReativos(parameterPage);
-        var modo2              = XParseModo2(parameterPage);
-        
-        var collect = new List<ComandoAbnt>();
+        var postosHorarios    = XParsePostosHorarios(parameterPage);
+        var mostradoresAtivos = XParseMostradoresAtivos(parameterPage);
+        var selRead           = XParseSelfRead(parameterPage);
+        var feriados          = XParseFeriados(parameterPage);
+        var horarioVerao      = XParseHorarioVerao(parameterPage);
+        var qee               = XParseQEE(parameterPage);
+        var tarifaReativos    = XParseTarifaReativos(parameterPage);
+        var modo2             = XParseModo2(parameterPage);
+
+        var collect = new List<MeterCommand>();
         if (postosHorarios.HasValue) {
             collect.AddRange(postosHorarios.Unwrap());
         }
@@ -58,7 +56,7 @@ namespace SmGenPar.Logic.Parser;
         return collect;
     }
 
-    public static Either<ParseResult, AB92> XParsePostoHorario(XElement element)
+    public static Either<ParseResult, AB92> XParsePosto(XElement element)
     {
         var xPonta         = element?.Elements(nameof(Posto.Ponta)).ToArray()         ?? Array.Empty<XElement>();
         var xForaPonta     = element?.Elements(nameof(Posto.ForaPonta)).ToArray()     ?? Array.Empty<XElement>();
@@ -89,7 +87,7 @@ namespace SmGenPar.Logic.Parser;
         }
 
         var ab92 = new AB92(0x999990) {
-            Modo                         = default,
+            CommandMode                  = default,
             AtuaisOuFuturos              = default,
             ComportamentoHorarioVerao    = default,
             Data                         = default,
@@ -148,7 +146,7 @@ namespace SmGenPar.Logic.Parser;
         }
         return values;
     }
-    public static Either<ParseResult, IReadOnlyCollection<AB92>> XParsePostosHorarios(XElement element)
+    public static Either<ParseResult, IReadOnlyCollection<AB92>> XParsePostosHorarios(XElement element, DateOnly? dateOnly = default)
     {
         var xPostosHorarios = element?.Element(nameof(PostosHorarios));
         var xDataInicio     = xPostosHorarios?.Element(nameof(PostosHorarios.DataDeInicio));
@@ -164,7 +162,6 @@ namespace SmGenPar.Logic.Parser;
 
         bool hasNull = false;
 
-        hasNull |= xDataInicio is null;
         hasNull |= xDomingo is null;
         hasNull |= xSegunda is null;
         hasNull |= xTerca is null;
@@ -178,34 +175,30 @@ namespace SmGenPar.Logic.Parser;
             return ParseResult.ParseError;
         }
 
-        var (state, err, data) = XParser.XParse<DateOnly>(xDataInicio);
+        var data = dateOnly ?? XParser.XParse<DateOnly>(xDataInicio).GetValueOrDefault(DateOnly.FromDateTime(DateTime.Now));
 
-        if (state is State.Err) {
-            return err;
-        }
-
-        var cmdDomingo = XParsePostoHorario(xDomingo!)
+        var cmdDomingo = XParsePosto(xDomingo!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Domingo);
 
-        var cmdSegunda = XParsePostoHorario(xSegunda!)
+        var cmdSegunda = XParsePosto(xSegunda!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Segunda);
 
-        var cmdTerca = XParsePostoHorario(xTerca!)
+        var cmdTerca = XParsePosto(xTerca!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Terca);
 
-        var cmdQuarta = XParsePostoHorario(xQuarta!)
+        var cmdQuarta = XParsePosto(xQuarta!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Quarta);
 
-        var cmdQuinta = XParsePostoHorario(xQuinta!)
+        var cmdQuinta = XParsePosto(xQuinta!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Quinta);
 
-        var cmdSexta = XParsePostoHorario(xSexta!)
+        var cmdSexta = XParsePosto(xSexta!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Sexta);
 
-        var cmdSabado = XParsePostoHorario(xSabado!)
+        var cmdSabado = XParsePosto(xSabado!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Sabado);
 
-        var cmdFeriado = XParsePostoHorario(xFeriado!)
+        var cmdFeriado = XParsePosto(xFeriado!)
             .OnValue(command => command.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Feriado);
 
         var results = cmdDomingo
@@ -229,7 +222,7 @@ namespace SmGenPar.Logic.Parser;
             AB92 command = commands[index];
             command.AtuaisOuFuturos           = AtuaisOuFuturos.Futuros;
             command.Data                      = BcdDateDMY.FromDateTime(data);
-            command.Modo                      = ModoComando.Escrita;
+            command.CommandMode               = CommandMode.Escrita;
             command.ComportamentoHorarioVerao = ComportamentoHorarioVerao.Ignora;
         }
         return new Either<ParseResult, IReadOnlyCollection<AB92>>(commands);
@@ -263,12 +256,12 @@ namespace SmGenPar.Logic.Parser;
 
         var lst = new List<EB03> {
             new EB03 {
-                Modo         = ModoComando.Escrita,
+                //CommandMode         = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Sobrescreve,
                 SelfRead     = first,
             },
             new EB03 {
-                Modo         = ModoComando.Escrita,
+                //CommandMode         = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Adiciona,
                 SelfRead     = second,
             }
@@ -283,7 +276,7 @@ namespace SmGenPar.Logic.Parser;
             var mostradoresAtivos = new Mostradores(bitField);
 
             return new Either<ParseResult, AB04>(new AB04 {
-                Modo              = ModoComando.Escrita,
+                CommandMode       = CommandMode.Escrita,
                 MostradoresAtivos = mostradoresAtivos,
             });
         }
@@ -329,27 +322,27 @@ namespace SmGenPar.Logic.Parser;
 
         var lst = new List<Abnt9832> {
             new Abnt9832(0x999990) {
-                Modo         = ModoComando.Escrita,
+                CommandMode  = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Sobrescreve,
                 Feriados     = first,
             },
             new Abnt9832(0x999991) {
-                Modo         = ModoComando.Escrita,
+                CommandMode         = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Adiciona,
                 Feriados     = second,
             },
             new Abnt9832(0x999991) {
-                Modo         = ModoComando.Escrita,
+                CommandMode         = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Adiciona,
                 Feriados     = third,
             },
             new Abnt9832(0x999991) {
-                Modo         = ModoComando.Escrita,
+                CommandMode         = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Adiciona,
                 Feriados     = fourth,
             },
             new Abnt9832(0x999991) {
-                Modo         = ModoComando.Escrita,
+                CommandMode         = CommandMode.Escrita,
                 ModoInsercao = ModoInsercao.Adiciona,
                 Feriados     = fifth,
             }
@@ -393,12 +386,12 @@ namespace SmGenPar.Logic.Parser;
 
         var lst = new List<AB64> {
             new AB64(0x999990) {
-                Modo           = ModoComando.Escrita,
+                CommandMode           = CommandMode.Escrita,
                 ModoInsercao   = ModoInsercao.Sobrescreve,
                 HorarioDeVerao = first,
             },
             new AB64(0x999991) {
-                Modo           = ModoComando.Escrita,
+                CommandMode           = CommandMode.Escrita,
                 ModoInsercao   = ModoInsercao.Adiciona,
                 HorarioDeVerao = second,
             },
@@ -406,17 +399,17 @@ namespace SmGenPar.Logic.Parser;
         return lst;
     }
 
-    public static Either<ParseResult, IReadOnlyCollection<ComandoAbnt>> XParseQEE(XElement element)
+    public static Either<ParseResult, IReadOnlyCollection<MeterCommand>> XParseQEE(XElement element)
     {
         var xQEE           = element.Element(nameof(Extend.Qee));
         var xTensaoNominal = xQEE?.Element(nameof(Qee.TensaoNominal));
         var xTipoLigacao   = xQEE?.Element(nameof(Qee.TipoLigacao));
 
-        if (xTensaoNominal is null || xTipoLigacao is null) {
+        if (xTensaoNominal is null && xTipoLigacao is null) {
             return ParseResult.ParseError;
         }
 
-        var lst = new List<ComandoAbnt>();
+        var lst = new List<MeterCommand>();
 
         if (XParser.XParse<float>(xTensaoNominal).TryGetValue(out var tensaoNominal)) {
             var abnt9895 = new Abnt9895(0x999990) {
@@ -425,10 +418,10 @@ namespace SmGenPar.Logic.Parser;
             };
             lst.Add(abnt9895);
         }
-        if (xTipoLigacao.Value is { Length: > 0 } tipoLigacao) {
+        if (xTipoLigacao?.Value is { Length: > 0 } tipoLigacao) {
             var ab95 = new Abnt95(0x999990) {
                 TipoLigacaoQee = Enum.Parse<TipoLigacaoQee>(tipoLigacao),
-                Alteracoes     = FlagIndicacaoAlteracaoAbnt95.TipoLigacao
+                Alteracoes     = FlagAlteracaoConstantes.TipoLigacao
             };
             lst.Add(ab95);
         }
@@ -495,7 +488,7 @@ namespace SmGenPar.Logic.Parser;
             .ToArray() ?? Array.Empty<BcdTimeMH>();
 
         var ab67 = new AB67(0x999990) {
-            Modo                     = ModoComando.Escrita,
+            CommandMode                     = CommandMode.Escrita,
             DataInicioTarifaReativos = BcdDateDMY.FromDateTime(dataVigencia),
             FatorPotenciaReferencia  = Bcd.ToBcd(fpReferencia),
             HorarioIndutivo          = arrIndutivos,
@@ -509,7 +502,7 @@ namespace SmGenPar.Logic.Parser;
         return ab67;
     }
 
-    public static Either<ParseResult, IReadOnlyCollection<ComandoAbnt>> XParseModo2(XElement element)
+    public static Either<ParseResult, IReadOnlyCollection<MeterCommand>> XParseModo2(XElement element)
     {
         var xModo2                        = element.Element(nameof(Extend.Modo2));
         var xKp                           = xModo2?.Elements(nameof(Extend.Modo2.Kp));
@@ -517,21 +510,20 @@ namespace SmGenPar.Logic.Parser;
         var xNmrCasasDecimaisEnergiaAtiva = xModo2?.Element(nameof(Extend.Modo2.NmrCasasDecimaisEnergia));
         var xNmrCasasDecimaisDemanda      = xModo2?.Element(nameof(Extend.Modo2.NmrCasasDecimaisDemanda));
 
-        bool hasAbnt90 = true;
-        hasAbnt90 &= xNmrCasasDecimaisEnergiaAtiva is not null;
-        hasAbnt90 &= xNmrCasasDecimaisDemanda is not null;
+        bool hasAbnt90 = false;
+        hasAbnt90 |= xNmrCasasDecimaisEnergiaAtiva is not null;
+        hasAbnt90 |= xNmrCasasDecimaisDemanda is not null;
 
-        bool hasAbnt95 = true;
-        hasAbnt95 &= xSaidaUsuario is not null;
-        hasAbnt95 &= xKp is not null;
+        bool hasAbnt95 = false;
+        hasAbnt95 |= xSaidaUsuario is not null;
+        hasAbnt95 |= xKp is not null;
 
-
-        var lst = new List<ComandoAbnt>();
 
         if (!hasAbnt90 && !hasAbnt95) {
             return ParseResult.ParseError;
         }
 
+        var lst = new List<MeterCommand>();
         if (hasAbnt90) {
             if (AddAbnt90(xNmrCasasDecimaisEnergiaAtiva, xNmrCasasDecimaisDemanda).TryGetValue(out var abnt90, out var parseResult)) {
                 lst.Add(abnt90);
@@ -541,7 +533,7 @@ namespace SmGenPar.Logic.Parser;
             }
         }
         if (hasAbnt95) {
-            if (AddAbnt95(xSaidaUsuario, xKp).TryGetValue(out var abnt95, out var parseResult)) {
+            if (AddAbnt95(xSaidaUsuario, xKp?.ToArray()).TryGetValue(out var abnt95, out var parseResult)) {
                 lst.Add(abnt95);
             }
             else {
@@ -549,7 +541,7 @@ namespace SmGenPar.Logic.Parser;
             }
         }
 
-        static Either<ParseResult, ComandoAbnt> AddAbnt90(XElement? xCasasDecimaisEnergiaAtiva, XElement? xCasasDecimaisDemanda)
+        static Either<ParseResult, MeterCommand> AddAbnt90(XElement? xCasasDecimaisEnergiaAtiva, XElement? xCasasDecimaisDemanda)
         {
             if (!XParser.XParse<byte>(xCasasDecimaisEnergiaAtiva).TryGetValue(out var nmrCasasDecimaisEnergia, out var parseResult)) {
                 return parseResult;
@@ -557,44 +549,41 @@ namespace SmGenPar.Logic.Parser;
             if (!XParser.XParse<byte>(xCasasDecimaisDemanda).TryGetValue(out var nmrCasasDecimaisDemanda, out parseResult)) {
                 return parseResult;
             }
+            // ReSharper disable twice BitwiseOperatorOnEnumWithoutFlags
             var energia = (ModoApresentacao)(nmrCasasDecimaisEnergia << 4) | ModoApresentacao.K_Grandeza;
             var demanda = (ModoApresentacao)(nmrCasasDecimaisDemanda << 4) | ModoApresentacao.K_Grandeza;
 
             var abnt90 = new Abnt90(0x999990) {
-                ModoApresentacaoCanais = new[] {
-                    (energia, demanda)
-                }
+                ModoApresentacaoCanais = new[] { (energia, demanda) }
             };
             return abnt90;
         }
 
-        static Either<ParseResult, ComandoAbnt> AddAbnt95(XElement? xSaidaUsuario, IEnumerable<XElement>? xKp)
+        static Either<ParseResult, MeterCommand> AddAbnt95(XElement? xSaidaUsuario, IReadOnlyCollection<XElement>? xKp)
         {
-            if (!Enum.TryParse<SaidaUsuario>(xSaidaUsuario?.Value, out var saidaUsuario)) {
-                return ParseResult.ParseError;
-            }
-
-            var arrKp = xKp?
-                .Select(XParser.XParse<int>)
-                .Where(x => x.HasValue)
-                .Select(x => x.Unwrap())
-                .ToArray();
-
-            if (arrKp?.Length != 2) {
-                return ParseResult.ParseError;
-            }
-
             var abnt95 = new Abnt95(0x999990) {
-                Alteracoes   = FlagIndicacaoAlteracaoAbnt95.SaidaUsuario,
-                SaidaUsuario = saidaUsuario,
-                ConstanteKp  = (arrKp[0], arrKp[1])
+                Alteracoes = default
             };
+            if (Enum.TryParse<TipoSaidaUsuario>(xSaidaUsuario?.Value, out var saidaUsuario)) {
+                abnt95.TipoSaidaUsuario =  saidaUsuario;
+                abnt95.Alteracoes       |= FlagAlteracaoConstantes.SaidaUsuario;
+            }
+            if (xKp?.Count == 2) {
+                var arrKp = xKp
+                    .Select(XParser.XParse<int>)
+                    .Where(x => x.HasValue)
+                    .Select(x => x.Unwrap())
+                    .ToArray();
+                abnt95.ConstanteKp = (arrKp[0], arrKp[1]);
+            }
+            else {
+                abnt95.ConstanteKp = (1, 1);
+            }
             return abnt95;
         }
 
         return lst;
     }
-
     public static Either<ParseResult, AB63> XParseReposicao(XElement element)
     {
         var xReposicao = element.Element(nameof(Extend.Reposicao));
@@ -630,18 +619,9 @@ namespace SmGenPar.Logic.Parser;
         }
 
         Span<Either<ParseResult, byte>> daysOfMonth = stackalloc Either<ParseResult, byte>[] {
-            XParser.XParse<byte>(xJaneiro),
-            XParser.XParse<byte>(xFevereiro),
-            XParser.XParse<byte>(xMarco),
-            XParser.XParse<byte>(xAbril),
-            XParser.XParse<byte>(xMaio),
-            XParser.XParse<byte>(xJunho),
-            XParser.XParse<byte>(xJulho),
-            XParser.XParse<byte>(xAgosto),
-            XParser.XParse<byte>(xSetembro),
-            XParser.XParse<byte>(xOutubro),
-            XParser.XParse<byte>(xNovembro),
-            XParser.XParse<byte>(xDezembro)
+            XParser.XParse<byte>(xJaneiro), XParser.XParse<byte>(xFevereiro), XParser.XParse<byte>(xMarco), XParser.XParse<byte>(xAbril),
+            XParser.XParse<byte>(xMaio), XParser.XParse<byte>(xJunho), XParser.XParse<byte>(xJulho), XParser.XParse<byte>(xAgosto),
+            XParser.XParse<byte>(xSetembro), XParser.XParse<byte>(xOutubro), XParser.XParse<byte>(xNovembro), XParser.XParse<byte>(xDezembro)
         };
 
         if (!daysOfMonth.All()) {
@@ -650,20 +630,14 @@ namespace SmGenPar.Logic.Parser;
 
         var ab63 = new AB63(0x999990) {
             AtivaDesativa = true,
-            Modo          = ModoComando.Escrita,
+            CommandMode          = CommandMode.Escrita,
             DiasDeReposicao = new (Bcd, Bcd)[] {
-                (Bcd.ToBcd(daysOfMonth[01].Unwrap()), 0x01),
-                (Bcd.ToBcd(daysOfMonth[02].Unwrap()), 0x02),
-                (Bcd.ToBcd(daysOfMonth[03].Unwrap()), 0x03),
-                (Bcd.ToBcd(daysOfMonth[04].Unwrap()), 0x04),
-                (Bcd.ToBcd(daysOfMonth[05].Unwrap()), 0x05),
-                (Bcd.ToBcd(daysOfMonth[06].Unwrap()), 0x06),
-                (Bcd.ToBcd(daysOfMonth[07].Unwrap()), 0x07),
-                (Bcd.ToBcd(daysOfMonth[08].Unwrap()), 0x08),
-                (Bcd.ToBcd(daysOfMonth[09].Unwrap()), 0x09),
-                (Bcd.ToBcd(daysOfMonth[10].Unwrap()), 0x10),
-                (Bcd.ToBcd(daysOfMonth[11].Unwrap()), 0x11),
-                (Bcd.ToBcd(daysOfMonth[12].Unwrap()), 0x12),
+                (Bcd.ToBcd(daysOfMonth[01].Unwrap()), 0x01), (Bcd.ToBcd(daysOfMonth[02].Unwrap()), 0x02),
+                (Bcd.ToBcd(daysOfMonth[03].Unwrap()), 0x03), (Bcd.ToBcd(daysOfMonth[04].Unwrap()), 0x04),
+                (Bcd.ToBcd(daysOfMonth[05].Unwrap()), 0x05), (Bcd.ToBcd(daysOfMonth[06].Unwrap()), 0x06),
+                (Bcd.ToBcd(daysOfMonth[07].Unwrap()), 0x07), (Bcd.ToBcd(daysOfMonth[08].Unwrap()), 0x08),
+                (Bcd.ToBcd(daysOfMonth[09].Unwrap()), 0x09), (Bcd.ToBcd(daysOfMonth[10].Unwrap()), 0x10),
+                (Bcd.ToBcd(daysOfMonth[11].Unwrap()), 0x11), (Bcd.ToBcd(daysOfMonth[12].Unwrap()), 0x12),
             }
         };
 

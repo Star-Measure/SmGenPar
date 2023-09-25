@@ -5,6 +5,7 @@
 @using SmGenPar.Wasm.Components
 @using JsonSerializer = System.Text.Json.JsonSerializer
 @using System.Xml.Linq
+@using SMIO
 @using SMIO.ValueTypes
 
 @inject IJSRuntime Js
@@ -62,7 +63,7 @@
     {
         var xElements = xNode.Descendants();
 
-        static bool IsEmptyTag(XElement childNode) => 
+        static bool IsEmptyTag(XElement childNode) =>
             childNode is null or { IsEmpty: true } || string.IsNullOrWhiteSpace(childNode.Value);
 
         xElements.Where(IsEmptyTag).Remove();
@@ -164,18 +165,17 @@
         for (var index = 0; index < enumNames.Length; index++) {
             var enumName = enumNames[index];
             var enumValue = enumValues[index];
+            var cod = MostradorHelper.CodigoDoBit((int)enumValue);
 
             builder.OpenElement(2, "div");
-            var newId = $"{id}.{enumName}";
             builder.OpenElement(3, "input");
-            builder.AddAttribute(4, "id", newId);
-            builder.AddAttribute(5, "name", newId);
+            builder.AddAttribute(4, "id", cod);
+            builder.AddAttribute(5, "name", $"{enumName}({cod})");
             builder.AddAttribute(6, "type", "checkbox");
             builder.AddAttribute(7, "checked", false);
             builder.AddAttribute(8, "onchange", (ChangeEventArgs changeEventArgs) =>
             {
-                var mostradores = (Mostradores)_formsRenderer.ElementValue
-                    .GetValueOrDefault(id, default(Mostradores));
+                var mostradores = (Mostradores)_formsRenderer.ElementValue.GetValueOrDefault(id, default(Mostradores));
 
                 var bit = changeEventArgs.Value as bool? ?? false;
                 mostradores = mostradores.SetBit((int)enumValue, bit);
@@ -189,7 +189,7 @@
             builder.CloseElement();
             const string htmlSpace = "&nbsp;";
             builder.AddMarkupContent(9, htmlSpace);
-            builder.AddLabelElement(newId, enumName);
+            builder.AddLabelElement(cod, $"{enumName}({cod})");
             builder.CloseElement();
         }
 

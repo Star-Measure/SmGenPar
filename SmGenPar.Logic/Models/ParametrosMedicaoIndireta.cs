@@ -9,7 +9,7 @@ namespace SmGenPar.Logic.Models;
 [PublicAPI]
 public record ParametrosMedicaoIndireta : IXElementParsable<ParametrosMedicaoIndireta>
 {
-    public SaidaUsuario SaidaDeUsuario { get; set; }
+    public TipoSaidaUsuario SaidaDeUsuario { get; set; }
     
     [Length(2)]
     public int?[]? Kp { get; set; }
@@ -27,7 +27,7 @@ public record ParametrosMedicaoIndireta : IXElementParsable<ParametrosMedicaoInd
         var kp = xKp?.Length > 0 ? new int?[xKp.Length] : Array.Empty<int?>();
 
         XParser.XParseNullable(xKp.AsSpan(), kp.AsSpan());
-        var saidaDeUsuario = XParser.XParseEnum<SaidaUsuario>(xSaidaDeUsuario);
+        var saidaDeUsuario = XParser.XParseEnum<TipoSaidaUsuario>(xSaidaDeUsuario);
 
         var nmrCasasDecimaisEnergia = XParser.XParse<int>(xNmrCasasDecimaisEnergia);
         var nmrCasasDecimaisDemanda = XParser.XParse<int>(xNmrCasasDecimaisDemanda);

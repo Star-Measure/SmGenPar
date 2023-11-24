@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 using System.Numerics;
 using System.Xml.Linq;
-using SMIO.ValueTypes;
 using SMResultTypes;
+using SMStructs;
 
 namespace SmGenPar.Logic.Parser;
 

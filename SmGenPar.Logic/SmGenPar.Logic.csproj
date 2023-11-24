@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.0.0.3</Version>
-    </PropertyGroup>
-    <ItemGroup>
-      <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
-      <PackageReference Include="SMIO" Version="1.0.0.27" />
-      <PackageReference Include="SMResultTypes" Version="1.0.0.2" />
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>1.0.0.6</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
+    <PackageReference Include="SMIO" Version="1.0.0.123" />
+    <PackageReference Include="SMResultTypes" Version="1.0.0.13" />
+    <PackageReference Include="SMStructs" Version="1.0.0.1" />
+  </ItemGroup>
 </Project>

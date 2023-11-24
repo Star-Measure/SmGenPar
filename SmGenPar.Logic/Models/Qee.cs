@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
-using SMIO.ValueTypes;
 using SMResultTypes;
+using SMStructs.Enums;
 
 namespace SmGenPar.Logic.Models;
 

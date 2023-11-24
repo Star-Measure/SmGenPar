@@ -236,7 +236,7 @@ public class FormRender
     {
         var array = ElementValue.GetValueOrDefault(id) as IList;
         var elementType = type.GetElementType() ?? typeof(object);
-        var lenghtAttribute = attributes.OfType<LengthAttribute>().FirstOrDefault();
+        var lenghtAttribute = attributes.OfType<Logic.Models.LengthAttribute>().FirstOrDefault();
 
         for (var i = 0; i < lenghtAttribute?.Lenght; ++i) {
             var index = i;

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
-using SMIO.ValueTypes;
+using SMStructs.Enums;
 
 namespace SmGenPar.Logic.Models;
 

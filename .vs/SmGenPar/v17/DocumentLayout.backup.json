@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{C54BF1F4-CF26-4044-A27B-3F9130004B7C}|SmGenPar.Wasm\\SmGenPar.Wasm.csproj|c:\\users\\alessandro.soares\\source\\repos\\smgenpar\\smgenpar.wasm\\smgenpar.wasm.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{C54BF1F4-CF26-4044-A27B-3F9130004B7C}|SmGenPar.Wasm\\SmGenPar.Wasm.csproj|solutionrelative:smgenpar.wasm\\smgenpar.wasm.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1A5DEC5B-9932-4CB8-A994-491B6F5252C4}|SmGenPar.Logic\\SmGenPar.Logic.csproj|c:\\users\\alessandro.soares\\source\\repos\\smgenpar\\smgenpar.logic\\smgenpar.logic.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{1A5DEC5B-9932-4CB8-A994-491B6F5252C4}|SmGenPar.Logic\\SmGenPar.Logic.csproj|solutionrelative:smgenpar.logic\\smgenpar.logic.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1A5DEC5B-9932-4CB8-A994-491B6F5252C4}|SmGenPar.Logic\\SmGenPar.Logic.csproj|c:\\users\\alessandro.soares\\source\\repos\\smgenpar\\smgenpar.logic\\models\\mostradoresflags.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1A5DEC5B-9932-4CB8-A994-491B6F5252C4}|SmGenPar.Logic\\SmGenPar.Logic.csproj|solutionrelative:smgenpar.logic\\models\\mostradoresflags.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -38,8 +46,34 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SmGenPar.Wasm",
+              "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Wasm\\SmGenPar.Wasm.csproj",
+              "RelativeDocumentMoniker": "SmGenPar.Wasm\\SmGenPar.Wasm.csproj",
+              "ToolTip": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Wasm\\SmGenPar.Wasm.csproj",
+              "RelativeToolTip": "SmGenPar.Wasm\\SmGenPar.Wasm.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-01-30T19:55:30.545Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SmGenPar.Logic",
+              "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\SmGenPar.Logic.csproj",
+              "RelativeDocumentMoniker": "SmGenPar.Logic\\SmGenPar.Logic.csproj",
+              "ToolTip": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\SmGenPar.Logic.csproj",
+              "RelativeToolTip": "SmGenPar.Logic\\SmGenPar.Logic.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-01-30T19:51:55.738Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
@@ -66,7 +100,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "Home.razor",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Wasm\\Pages\\Home.razor",
               "RelativeDocumentMoniker": "SmGenPar.Wasm\\Pages\\Home.razor",
@@ -79,20 +113,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "ParametrosExtend.razor",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Wasm\\Pages\\ParametrosExtend.razor",
               "RelativeDocumentMoniker": "SmGenPar.Wasm\\Pages\\ParametrosExtend.razor",
               "ToolTip": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Wasm\\Pages\\ParametrosExtend.razor",
               "RelativeToolTip": "SmGenPar.Wasm\\Pages\\ParametrosExtend.razor",
-              "ViewState": "AgIAAKEAAAAAAAAAAAAAAK8AAABUAAAAAAAAAA==",
+              "ViewState": "AgIAAJ4AAAAAAAAAAIBJwK8AAABUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-01-30T16:56:10.651Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "MostradorExtension.cs",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\Models\\MostradorExtension.cs",
               "RelativeDocumentMoniker": "SmGenPar.Logic\\Models\\MostradorExtension.cs",
@@ -105,20 +139,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "MostradoresFlags.cs",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\Models\\MostradoresFlags.cs",
               "RelativeDocumentMoniker": "SmGenPar.Logic\\Models\\MostradoresFlags.cs",
               "ToolTip": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\Models\\MostradoresFlags.cs",
               "RelativeToolTip": "SmGenPar.Logic\\Models\\MostradoresFlags.cs",
-              "ViewState": "AgIAADkAAAAAAAAAAAAAAEQAAABMAAAAAAAAAA==",
+              "ViewState": "AgIAADkAAAAAAAAAAAAqwD8AAABLAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-01-29T19:00:48.463Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "XParser.cs",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\Parser\\XParser.cs",
               "RelativeDocumentMoniker": "SmGenPar.Logic\\Parser\\XParser.cs",
@@ -131,7 +165,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "MostradorXParse.cs",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\Parser\\MostradorXParse.cs",
               "RelativeDocumentMoniker": "SmGenPar.Logic\\Parser\\MostradorXParse.cs",
@@ -144,7 +178,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 8,
               "Title": "XParseCommand.cs",
               "DocumentMoniker": "C:\\Users\\alessandro.soares\\source\\repos\\SmGenPar\\SmGenPar.Logic\\Parser\\XParseCommand.cs",
               "RelativeDocumentMoniker": "SmGenPar.Logic\\Parser\\XParseCommand.cs",

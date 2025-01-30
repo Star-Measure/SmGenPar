@@ -1,19 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace SmGenPar.Wasm.Components;
 
 public static class RenderHelper
 {
     public static void AddOptionElement(
-        this RenderTreeBuilder  builder,
-        string?            id,
-        string             enumValue,
+        this RenderTreeBuilder builder,
+        string? id,
+        string enumValue,
         params Attribute[] attributes)
     {
         var sequence = 0;
-        builder.OpenElement(sequence  += 1, "option");
+        builder.OpenElement(sequence += 1, "option");
         builder.AddAttribute(sequence += 1, "forId", id);
         builder.AddAttribute(sequence += 1, "value", enumValue);
         builder.AddContent(sequence + 1, enumValue);
@@ -21,28 +21,29 @@ public static class RenderHelper
     }
 
     public static void OpenSelectElement(
-        this RenderTreeBuilder   builder,
-        string?                  id,
-        string                   text,
+        this RenderTreeBuilder builder,
+        string? id,
+        string text,
         Action<ChangeEventArgs>? callback = null,
-        params Attribute[]       attributes)
+        params Attribute[] attributes)
     {
-        var sequence          = 0;
+        var sequence = 0;
         var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
-        builder.OpenElement(sequence  += 1, "select");
+        builder.OpenElement(sequence += 1, "select");
         builder.AddAttribute(sequence += 1, "forId", id);
         builder.AddAttribute(sequence += 1, "onchange", callback);
         builder.AddAttribute(sequence += 1, "value", text);
-        if (requiredAttribute is not null) {
+        if (requiredAttribute is not null)
+        {
             builder.AddAttribute(sequence + 1, "required", true);
         }
     }
 
     public static void AddLabelElement(
         this RenderTreeBuilder builder,
-        string?                forId,
-        string                 contentText,
-        params Attribute[]     attributes)
+        string? forId,
+        string contentText,
+        params Attribute[] attributes)
     {
         var displayAttribute = attributes.OfType<DisplayAttribute>().FirstOrDefault();
         contentText = displayAttribute?.Name ?? contentText;

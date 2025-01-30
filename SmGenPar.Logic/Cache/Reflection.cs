@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
+using System.Reflection;
 using static System.Runtime.InteropServices.CollectionsMarshal;
 
 namespace SmGenPar.Logic.Cache;
@@ -14,7 +14,8 @@ public static class Extensions
     {
         ref var values = ref GetValueRefOrAddDefault(dictionary, key, out bool exists);
 
-        if (!exists || values is null) {
+        if (!exists || values is null)
+        {
             values = factory(key);
         }
 
@@ -28,7 +29,8 @@ public static class Extensions
     {
         ref var values = ref GetValueRefOrAddDefault(dictionary, key, out bool exists);
 
-        if (!exists || values is null) {
+        if (!exists || values is null)
+        {
             values = factory();
         }
 
@@ -50,6 +52,6 @@ public static class Extensions
 [PublicAPI]
 public static class Cache
 {
-    public readonly static Dictionary<Type, PropertyInfo[]>      PropertyInfo = new();
-    public readonly static Dictionary<PropertyInfo, Attribute[]> Attributes   = new();
+    public readonly static Dictionary<Type, PropertyInfo[]> PropertyInfo = new();
+    public readonly static Dictionary<PropertyInfo, Attribute[]> Attributes = new();
 }

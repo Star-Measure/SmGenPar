@@ -1,8 +1,4 @@
-﻿using System.Globalization;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SmGenPar.Logic.Models;
 using SMIO.Buffers;
 using SMIO.Buffers.AB;
@@ -11,6 +7,10 @@ using SMIO.Buffers.EB;
 using SMResultTypes;
 using SMStructs;
 using SMStructs.Enums;
+using System.Globalization;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using static SMIO.SpanExtensions;
 
 namespace SmGenPar.Logic.Parser;
@@ -21,45 +21,53 @@ public static class XParseCommand
     [PublicAPI]
     public static IEnumerable<MeterCommand> XParseParameterPage(XElement parameterPage)
     {
-        var postosHorarios    = XParsePostosHorarios(parameterPage);
+        var postosHorarios = XParsePostosHorarios(parameterPage);
         var mostradoresAtivos = XParseMostradoresAtivos(parameterPage);
-        var selRead           = XParseSelfRead(parameterPage);
-        var feriados          = XParseFeriados(parameterPage);
-        var horarioVerao      = XParseHorarioVerao(parameterPage);
-        var qee               = XParseQEE(parameterPage);
-        var tarifaReativos    = XParseTarifaReativos(parameterPage);
-        var modo2             = XParseModo2(parameterPage);
+        var selRead = XParseSelfRead(parameterPage);
+        var feriados = XParseFeriados(parameterPage);
+        var horarioVerao = XParseHorarioVerao(parameterPage);
+        var qee = XParseQEE(parameterPage);
+        var tarifaReativos = XParseTarifaReativos(parameterPage);
+        var modo2 = XParseModo2(parameterPage);
 
         var collect = new List<MeterCommand>();
-        if (postosHorarios.HasValue) {
+        if (postosHorarios.HasValue)
+        {
             collect.AddRange(postosHorarios.Unwrap());
         }
 
-        if (mostradoresAtivos.HasValue) {
+        if (mostradoresAtivos.HasValue)
+        {
             collect.Add(mostradoresAtivos.Unwrap());
         }
 
-        if (selRead.HasValue) {
+        if (selRead.HasValue)
+        {
             collect.AddRange(selRead.Unwrap());
         }
 
-        if (feriados.HasValue) {
+        if (feriados.HasValue)
+        {
             collect.AddRange(feriados.Unwrap());
         }
 
-        if (horarioVerao.HasValue) {
+        if (horarioVerao.HasValue)
+        {
             collect.AddRange(horarioVerao.Unwrap());
         }
 
-        if (qee.HasValue) {
+        if (qee.HasValue)
+        {
             collect.AddRange(qee.Unwrap());
         }
 
-        if (tarifaReativos.HasValue) {
+        if (tarifaReativos.HasValue)
+        {
             collect.Add(tarifaReativos.Unwrap());
         }
 
-        if (modo2.HasValue) {
+        if (modo2.HasValue)
+        {
             collect.AddRange(modo2.Unwrap());
         }
 
@@ -68,62 +76,72 @@ public static class XParseCommand
 
     public static Either<ParseResult, AB92> XParsePosto(XElement element)
     {
-        var xPonta         = element?.Elements(nameof(Posto.Ponta)).ToArray()         ?? Array.Empty<XElement>();
-        var xForaPonta     = element?.Elements(nameof(Posto.ForaPonta)).ToArray()     ?? Array.Empty<XElement>();
-        var xReservado     = element?.Elements(nameof(Posto.Reservado)).ToArray()     ?? Array.Empty<XElement>();
+        var xPonta = element?.Elements(nameof(Posto.Ponta)).ToArray() ?? Array.Empty<XElement>();
+        var xForaPonta = element?.Elements(nameof(Posto.ForaPonta)).ToArray() ?? Array.Empty<XElement>();
+        var xReservado = element?.Elements(nameof(Posto.Reservado)).ToArray() ?? Array.Empty<XElement>();
         var xIntermediario = element?.Elements(nameof(Posto.Intermediario)).ToArray() ?? Array.Empty<XElement>();
 
-        if (xForaPonta.Length <= 0 && xReservado.Length <= 0 && xIntermediario.Length <= 0 && xPonta.Length <= 0) {
+        if (xForaPonta.Length <= 0 && xReservado.Length <= 0 && xIntermediario.Length <= 0 && xPonta.Length <= 0)
+        {
             return ParseResult.None;
         }
 
-        var pontas        = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xPonta);
-        var foraPonta     = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xForaPonta);
-        var reservado     = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xReservado);
+        var pontas = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xPonta);
+        var foraPonta = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xForaPonta);
+        var reservado = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xReservado);
         var intermediario = ParseAndCoalesce(stackalloc Either<ParseResult, TimeOnly>[4], xIntermediario);
 
         CondicaoAtivacaoPostoHorario condicaoDeAtivacao = default;
-        if (xPonta.Length <= 0) {
+        if (xPonta.Length <= 0)
+        {
             condicaoDeAtivacao |= CondicaoAtivacaoPostoHorario.PontaInvalido;
         }
 
-        if (xForaPonta.Length <= 0) {
+        if (xForaPonta.Length <= 0)
+        {
             condicaoDeAtivacao |= CondicaoAtivacaoPostoHorario.ForaPontaInvalido;
         }
 
-        if (xReservado.Length <= 0) {
+        if (xReservado.Length <= 0)
+        {
             condicaoDeAtivacao |= CondicaoAtivacaoPostoHorario.ReservadoInvalido;
         }
 
-        if (xIntermediario.Length > 0) {
+        if (xIntermediario.Length > 0)
+        {
             condicaoDeAtivacao |= CondicaoAtivacaoPostoHorario.QuartoPostoValido;
         }
 
-        var ab92 = new AB92(0x999990) {
-            CommandMode                  = default,
-            AtuaisOuFuturos              = default,
-            ComportamentoHorarioVerao    = ComportamentoHorarioVerao.Ignora,
-            Data                         = default,
+        var ab92 = new AB92(0x999990)
+        {
+            CommandMode = default,
+            AtuaisOuFuturos = default,
+            ComportamentoHorarioVerao = ComportamentoHorarioVerao.Ignora,
+            Data = default,
             CondicaoAtivacaoPostoHorario = condicaoDeAtivacao,
-            ConjuntoPonta = new ConjuntoPostosSemanais {
+            ConjuntoPonta = new ConjuntoPostosSemanais
+            {
                 [0] = StPosto.FromDateTime(pontas[0].GetValueOrDefault()),
                 [1] = StPosto.FromDateTime(pontas[1].GetValueOrDefault()),
                 [2] = StPosto.FromDateTime(pontas[2].GetValueOrDefault()),
                 [3] = StPosto.FromDateTime(pontas[3].GetValueOrDefault())
             },
-            ConjuntoForaPonta = new ConjuntoPostosSemanais {
+            ConjuntoForaPonta = new ConjuntoPostosSemanais
+            {
                 [0] = StPosto.FromDateTime(foraPonta[0].GetValueOrDefault()),
                 [1] = StPosto.FromDateTime(foraPonta[1].GetValueOrDefault()),
                 [2] = StPosto.FromDateTime(foraPonta[2].GetValueOrDefault()),
                 [3] = StPosto.FromDateTime(foraPonta[3].GetValueOrDefault())
             },
-            ConjuntoReservado = new ConjuntoPostosSemanais {
+            ConjuntoReservado = new ConjuntoPostosSemanais
+            {
                 [0] = StPosto.FromDateTime(reservado[0].GetValueOrDefault()),
                 [1] = StPosto.FromDateTime(reservado[1].GetValueOrDefault()),
                 [2] = StPosto.FromDateTime(reservado[2].GetValueOrDefault()),
                 [3] = StPosto.FromDateTime(reservado[3].GetValueOrDefault())
             },
-            ConjuntoIntermediario = new ConjuntoPostosSemanais {
+            ConjuntoIntermediario = new ConjuntoPostosSemanais
+            {
                 [0] = StPosto.FromDateTime(intermediario[0].GetValueOrDefault()),
                 [1] = StPosto.FromDateTime(intermediario[1].GetValueOrDefault()),
                 [2] = StPosto.FromDateTime(intermediario[2].GetValueOrDefault()),
@@ -137,26 +155,33 @@ public static class XParseCommand
         Span<Either<ParseResult, TParsable>> values,
         Span<XElement> elements) where TParsable : IParsable<TParsable>
     {
-        for (var i = 0; i < elements.Length; ++i) {
+        for (var i = 0; i < elements.Length; ++i)
+        {
             values[i] = XParser.XParse<TParsable>(elements[i]);
         }
 
         Either<ParseResult, TParsable> lastValid = default;
-        for (var i = 0; i < values.Length; ++i) {
-            if (values[i].HasValue) {
+        for (var i = 0; i < values.Length; ++i)
+        {
+            if (values[i].HasValue)
+            {
                 lastValid = values[i];
             }
-            else if (values[i].State == State.None) {
+            else if (values[i].State == State.None)
+            {
                 values[i] = lastValid;
             }
         }
 
         lastValid = default;
-        for (var i = values.Length - 1; i >= 0; --i) {
-            if (values[i].HasValue) {
+        for (var i = values.Length - 1; i >= 0; --i)
+        {
+            if (values[i].HasValue)
+            {
                 lastValid = values[i];
             }
-            else if (values[i].State == State.None) {
+            else if (values[i].State == State.None)
+            {
                 values[i] = lastValid;
             }
         }
@@ -168,15 +193,15 @@ public static class XParseCommand
         DateOnly? dateOnly = default)
     {
         var xPostosHorarios = element?.Element(nameof(PostosHorarios));
-        var xDataInicio     = xPostosHorarios?.Element(nameof(PostosHorarios.DataDeInicio));
-        var xDomingo        = xPostosHorarios?.Element(nameof(PostosHorarios.Domingo));
-        var xSegunda        = xPostosHorarios?.Element(nameof(PostosHorarios.Segunda));
-        var xTerca          = xPostosHorarios?.Element(nameof(PostosHorarios.Terca));
-        var xQuarta         = xPostosHorarios?.Element(nameof(PostosHorarios.Quarta));
-        var xQuinta         = xPostosHorarios?.Element(nameof(PostosHorarios.Quinta));
-        var xSexta          = xPostosHorarios?.Element(nameof(PostosHorarios.Sexta));
-        var xSabado         = xPostosHorarios?.Element(nameof(PostosHorarios.Sabado));
-        var xFeriado        = xPostosHorarios?.Element(nameof(PostosHorarios.Feriado));
+        var xDataInicio = xPostosHorarios?.Element(nameof(PostosHorarios.DataDeInicio));
+        var xDomingo = xPostosHorarios?.Element(nameof(PostosHorarios.Domingo));
+        var xSegunda = xPostosHorarios?.Element(nameof(PostosHorarios.Segunda));
+        var xTerca = xPostosHorarios?.Element(nameof(PostosHorarios.Terca));
+        var xQuarta = xPostosHorarios?.Element(nameof(PostosHorarios.Quarta));
+        var xQuinta = xPostosHorarios?.Element(nameof(PostosHorarios.Quinta));
+        var xSexta = xPostosHorarios?.Element(nameof(PostosHorarios.Sexta));
+        var xSabado = xPostosHorarios?.Element(nameof(PostosHorarios.Sabado));
+        var xFeriado = xPostosHorarios?.Element(nameof(PostosHorarios.Feriado));
 
 
         bool hasNull = false;
@@ -190,7 +215,8 @@ public static class XParseCommand
         hasNull |= xSabado is null;
         hasNull |= xFeriado is null;
 
-        if (hasNull) {
+        if (hasNull)
+        {
             return ParseResult.ParseError;
         }
 
@@ -199,42 +225,50 @@ public static class XParseCommand
 
         var cmdDomingo = XParsePosto(xDomingo!);
         var cmdSegunda = XParsePosto(xSegunda!);
-        var cmdTerca   = XParsePosto(xTerca!);
-        var cmdQuarta  = XParsePosto(xQuarta!);
-        var cmdQuinta  = XParsePosto(xQuinta!);
-        var cmdSexta   = XParsePosto(xSexta!);
-        var cmdSabado  = XParsePosto(xSabado!);
+        var cmdTerca = XParsePosto(xTerca!);
+        var cmdQuarta = XParsePosto(xQuarta!);
+        var cmdQuinta = XParsePosto(xQuinta!);
+        var cmdSexta = XParsePosto(xSexta!);
+        var cmdSabado = XParsePosto(xSabado!);
         var cmdFeriado = XParsePosto(xFeriado!);
 
-        if (cmdDomingo.TryGetValue(out var cmdDomingoValue)) {
+        if (cmdDomingo.TryGetValue(out var cmdDomingoValue))
+        {
             cmdDomingoValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Domingo;
         }
 
-        if (cmdSegunda.TryGetValue(out var cmdSegundaValue)) {
+        if (cmdSegunda.TryGetValue(out var cmdSegundaValue))
+        {
             cmdSegundaValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Segunda;
         }
 
-        if (cmdTerca.TryGetValue(out var cmdTercaValue)) {
+        if (cmdTerca.TryGetValue(out var cmdTercaValue))
+        {
             cmdTercaValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Terca;
         }
 
-        if (cmdQuarta.TryGetValue(out var cmdQuartaValue)) {
+        if (cmdQuarta.TryGetValue(out var cmdQuartaValue))
+        {
             cmdQuartaValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Quarta;
         }
 
-        if (cmdQuinta.TryGetValue(out var cmdQuintaValue)) {
+        if (cmdQuinta.TryGetValue(out var cmdQuintaValue))
+        {
             cmdQuintaValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Quinta;
         }
 
-        if (cmdSexta.TryGetValue(out var cmdSextaValue)) {
+        if (cmdSexta.TryGetValue(out var cmdSextaValue))
+        {
             cmdSextaValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Sexta;
         }
 
-        if (cmdSabado.TryGetValue(out var cmdSabadoValue)) {
+        if (cmdSabado.TryGetValue(out var cmdSabadoValue))
+        {
             cmdSabadoValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Sabado;
         }
 
-        if (cmdFeriado.TryGetValue(out var cmdFeriadoValue)) {
+        if (cmdFeriado.TryGetValue(out var cmdFeriadoValue))
+        {
             cmdFeriadoValue.CondicaoAtivacaoPostoHorario |= CondicaoAtivacaoPostoHorario.Feriado;
         }
 
@@ -247,7 +281,8 @@ public static class XParseCommand
                       .AppendResult(cmdSabado)
                       .AppendResult(cmdFeriado);
 
-        if (results.TryGetError(out var error)) {
+        if (results.TryGetError(out var error))
+        {
             return error;
         }
 
@@ -255,10 +290,11 @@ public static class XParseCommand
 
         CollectionsMarshal.AsSpan(commands).Reverse();
 
-        foreach (var command in commands) {
-            command.AtuaisOuFuturos           = AtuaisOuFuturos.Futuros;
-            command.Data                      = StDiaMesAno.FromDateTime(data);
-            command.CommandMode               = CommandMode.Escrita;
+        foreach (var command in commands)
+        {
+            command.AtuaisOuFuturos = AtuaisOuFuturos.Futuros;
+            command.Data = StDiaMesAno.FromDateTime(data);
+            command.CommandMode = CommandMode.Escrita;
             command.ComportamentoHorarioVerao = ComportamentoHorarioVerao.Ignora;
         }
 
@@ -275,21 +311,24 @@ public static class XParseCommand
                                  .Select(SelfRead.FromDateTime)
                                  .ToArray();
 
-        if (arrSelfRead.Length == 0) {
+        if (arrSelfRead.Length == 0)
+        {
             return ParseResult.ParseError;
         }
 
-        if (arrSelfRead.Length > selfReadCount) {
+        if (arrSelfRead.Length > selfReadCount)
+        {
             return ParseResult.ParseError;
         }
 
         Span<SelfRead> span = stackalloc SelfRead[selfReadCount];
 
-        for (var i = 0; i < arrSelfRead.Length; i++) {
+        for (var i = 0; i < arrSelfRead.Length; i++)
+        {
             span[i] = arrSelfRead[i];
         }
 
-        var first  = span[..8];
+        var first = span[..8];
         var second = span[8..];
 
         var lst = new List<EB03> {
@@ -311,11 +350,13 @@ public static class XParseCommand
     {
         var xMostrador = element.Element(nameof(Mostradores))?.Element("Codigo");
 
-        if (BigInteger.TryParse(xMostrador?.Value[2..], NumberStyles.HexNumber, null, out var bitField)) {
+        if (BigInteger.TryParse(xMostrador?.Value[2..], NumberStyles.HexNumber, null, out var bitField))
+        {
             var mostradoresAtivos = new Mostradores(bitField);
 
-            return new Either<ParseResult, AB04>(new AB04 {
-                CommandMode       = CommandMode.Escrita,
+            return new Either<ParseResult, AB04>(new AB04
+            {
+                CommandMode = CommandMode.Escrita,
                 MostradoresAtivos = mostradoresAtivos,
             });
         }
@@ -333,11 +374,13 @@ public static class XParseCommand
                                  .Select(StDiaMesAno.FromDateTime)
                                  .ToArray();
 
-        if (arrFeriados.Length == 0) {
+        if (arrFeriados.Length == 0)
+        {
             return ParseResult.ParseError;
         }
 
-        if (arrFeriados.Length > feriadoCount) {
+        if (arrFeriados.Length > feriadoCount)
+        {
             return ParseResult.ParseError;
         }
 
@@ -345,15 +388,16 @@ public static class XParseCommand
 
         Span<StDiaMesAno> span = stackalloc StDiaMesAno[feriadoCount];
 
-        for (var i = 0; i < arrFeriados.Length; i++) {
+        for (var i = 0; i < arrFeriados.Length; i++)
+        {
             span[i] = arrFeriados[i];
         }
 
-        Span<StDiaMesAno> first  = stackalloc StDiaMesAno[packetSize];
+        Span<StDiaMesAno> first = stackalloc StDiaMesAno[packetSize];
         Span<StDiaMesAno> second = stackalloc StDiaMesAno[packetSize];
-        Span<StDiaMesAno> third  = stackalloc StDiaMesAno[packetSize];
+        Span<StDiaMesAno> third = stackalloc StDiaMesAno[packetSize];
         Span<StDiaMesAno> fourth = stackalloc StDiaMesAno[packetSize];
-        Span<StDiaMesAno> fifth  = stackalloc StDiaMesAno[feriadoCount % (packetSize * 4)];
+        Span<StDiaMesAno> fifth = stackalloc StDiaMesAno[feriadoCount % (packetSize * 4)];
 
         ReadFrom(ref span, first);
         ReadFrom(ref span, second);
@@ -404,23 +448,26 @@ public static class XParseCommand
                                         .Select(x => StHorarioVerao.FromDateTime(x.Inicio, x.Fim))
                                         .ToArray();
 
-        if (arrHorariosDeVerao.Length == 0) {
+        if (arrHorariosDeVerao.Length == 0)
+        {
             return ParseResult.ParseError;
         }
 
-        if (arrHorariosDeVerao.Length > horarioVeraoCount) {
+        if (arrHorariosDeVerao.Length > horarioVeraoCount)
+        {
             return ParseResult.ParseError;
         }
 
         Span<StHorarioVerao> span = stackalloc StHorarioVerao[horarioVeraoCount];
 
-        for (var i = 0; i < arrHorariosDeVerao.Length; i++) {
+        for (var i = 0; i < arrHorariosDeVerao.Length; i++)
+        {
             span[i] = arrHorariosDeVerao[i];
         }
 
-        const int            packetSize = 9;
-        Span<StHorarioVerao> first      = stackalloc StHorarioVerao[packetSize];
-        Span<StHorarioVerao> second     = stackalloc StHorarioVerao[horarioVeraoCount % packetSize];
+        const int packetSize = 9;
+        Span<StHorarioVerao> first = stackalloc StHorarioVerao[packetSize];
+        Span<StHorarioVerao> second = stackalloc StHorarioVerao[horarioVeraoCount % packetSize];
 
         ReadFrom(ref span, first);
         ReadFrom(ref span, second);
@@ -442,28 +489,33 @@ public static class XParseCommand
 
     public static Either<ParseResult, IReadOnlyCollection<MeterCommand>> XParseQEE(XElement element)
     {
-        var xQEE           = element.Element(nameof(Extend.Qee));
+        var xQEE = element.Element(nameof(Extend.Qee));
         var xTensaoNominal = xQEE?.Element(nameof(Qee.TensaoNominal));
-        var xTipoLigacao   = xQEE?.Element(nameof(Qee.TipoLigacao));
+        var xTipoLigacao = xQEE?.Element(nameof(Qee.TipoLigacao));
 
-        if (xTensaoNominal is null && xTipoLigacao is null) {
+        if (xTensaoNominal is null && xTipoLigacao is null)
+        {
             return ParseResult.ParseError;
         }
 
         var lst = new List<MeterCommand>();
 
-        if (XParser.XParse<float>(xTensaoNominal).TryGetValue(out var tensaoNominal)) {
-            var abnt9895 = new Abnt9895(0x999990) {
-                TensaoNominalPrimaria          = tensaoNominal,
+        if (XParser.XParse<float>(xTensaoNominal).TryGetValue(out var tensaoNominal))
+        {
+            var abnt9895 = new Abnt9895(0x999990)
+            {
+                TensaoNominalPrimaria = tensaoNominal,
                 FlagIndicacaoAlteracaoAbnt9895 = FlagIndicacaoAlteracaoAbnt9895.TensaoNominalPrimaria
             };
             lst.Add(abnt9895);
         }
 
-        if (xTipoLigacao?.Value is { Length: > 0 } tipoLigacao) {
-            var ab95 = new Abnt95(0x999990) {
+        if (xTipoLigacao?.Value is { Length: > 0 } tipoLigacao)
+        {
+            var ab95 = new Abnt95(0x999990)
+            {
                 TipoLigacaoQee = Enum.Parse<TipoLigacaoQee>(tipoLigacao),
-                Alteracoes     = FlagAlteracaoConstantes.TipoLigacao
+                Alteracoes = FlagAlteracaoConstantes.TipoLigacao
             };
             lst.Add(ab95);
         }
@@ -476,12 +528,12 @@ public static class XParseCommand
     public static Either<ParseResult, AB67> XParseTarifaReativos(XElement element)
     {
         var xTarifaReativos = element.Element(nameof(Extend.TarifaReativos));
-        var xDataVigencia   = xTarifaReativos?.Element(nameof(TarifaReativos.DataVigencia));
-        var xFpReferencia   = xTarifaReativos?.Element(nameof(TarifaReativos.FpDeReferencia));
-        var xSabados        = xTarifaReativos?.Element(nameof(TarifaReativos.Sabados));
-        var xDiasUteis      = xTarifaReativos?.Element(nameof(TarifaReativos.DiasUteis));
-        var xFeriados       = xTarifaReativos?.Element(nameof(TarifaReativos.Feriados));
-        var xDomingos       = xTarifaReativos?.Element(nameof(TarifaReativos.Domingos));
+        var xDataVigencia = xTarifaReativos?.Element(nameof(TarifaReativos.DataVigencia));
+        var xFpReferencia = xTarifaReativos?.Element(nameof(TarifaReativos.FpDeReferencia));
+        var xSabados = xTarifaReativos?.Element(nameof(TarifaReativos.Sabados));
+        var xDiasUteis = xTarifaReativos?.Element(nameof(TarifaReativos.DiasUteis));
+        var xFeriados = xTarifaReativos?.Element(nameof(TarifaReativos.Feriados));
+        var xDomingos = xTarifaReativos?.Element(nameof(TarifaReativos.Domingos));
 
         ParseResult parseResult;
 
@@ -494,31 +546,38 @@ public static class XParseCommand
         hasNull |= xFeriados is null;
         hasNull |= xDomingos is null;
 
-        if (hasNull) {
+        if (hasNull)
+        {
             return ParseResult.ParseError;
         }
 
-        if (!XParser.XParse<DateOnly>(xDataVigencia).TryGetValue(out var dataVigencia, out parseResult)) {
+        if (!XParser.XParse<DateOnly>(xDataVigencia).TryGetValue(out var dataVigencia, out parseResult))
+        {
             return parseResult;
         }
 
-        if (!XParser.XParse<byte>(xFpReferencia).TryGetValue(out var fpReferencia, out parseResult)) {
+        if (!XParser.XParse<byte>(xFpReferencia).TryGetValue(out var fpReferencia, out parseResult))
+        {
             return parseResult;
         }
 
-        if (!Enum.TryParse<TarifaReativosFlag>(xSabados?.Value, out var sabados)) {
+        if (!Enum.TryParse<TarifaReativosFlag>(xSabados?.Value, out var sabados))
+        {
             sabados = TarifaReativosFlag.Indefinido;
         }
 
-        if (!Enum.TryParse<TarifaReativosFlag>(xDiasUteis?.Value, out var diasUteis)) {
+        if (!Enum.TryParse<TarifaReativosFlag>(xDiasUteis?.Value, out var diasUteis))
+        {
             diasUteis = TarifaReativosFlag.Indefinido;
         }
 
-        if (!Enum.TryParse<TarifaReativosFlag>(xFeriados?.Value, out var feriados)) {
+        if (!Enum.TryParse<TarifaReativosFlag>(xFeriados?.Value, out var feriados))
+        {
             feriados = TarifaReativosFlag.Indefinido;
         }
 
-        if (!Enum.TryParse<TarifaReativosFlag>(xDomingos?.Value, out var domingos)) {
+        if (!Enum.TryParse<TarifaReativosFlag>(xDomingos?.Value, out var domingos))
+        {
             domingos = TarifaReativosFlag.Indefinido;
         }
 
@@ -536,16 +595,17 @@ public static class XParseCommand
                                             .Select(StPosto.FromDateTime)
                                             .ToArray() ?? Array.Empty<StPosto>();
 
-        var ab67 = new AB67(0x999990) {
-            CommandMode              = CommandMode.Escrita,
+        var ab67 = new AB67(0x999990)
+        {
+            CommandMode = CommandMode.Escrita,
             DataInicioTarifaReativos = StDiaMesAno.FromDateTime(dataVigencia),
-            FatorPotenciaReferencia  = Bcd.ToBcd(fpReferencia),
-            HorarioIndutivo          = arrIndutivos,
-            HorarioCapacitivo        = arrCapacitivos,
-            AtivosSabado             = sabados,
-            AtivosDiasUteis          = diasUteis,
-            AtivosFeriados           = feriados,
-            AtivosDomingo            = domingos,
+            FatorPotenciaReferencia = Bcd.ToBcd(fpReferencia),
+            HorarioIndutivo = arrIndutivos,
+            HorarioCapacitivo = arrCapacitivos,
+            AtivosSabado = sabados,
+            AtivosDiasUteis = diasUteis,
+            AtivosFeriados = feriados,
+            AtivosDomingo = domingos,
         };
 
         return ab67;
@@ -553,11 +613,11 @@ public static class XParseCommand
 
     public static Either<ParseResult, IReadOnlyCollection<MeterCommand>> XParseModo2(XElement element)
     {
-        var xModo2                        = element.Element(nameof(Extend.Modo2));
-        var xKp                           = xModo2?.Elements(nameof(Extend.Modo2.Kp));
-        var xSaidaUsuario                 = xModo2?.Element(nameof(Extend.Modo2.SaidaDeUsuario));
+        var xModo2 = element.Element(nameof(Extend.Modo2));
+        var xKp = xModo2?.Elements(nameof(Extend.Modo2.Kp));
+        var xSaidaUsuario = xModo2?.Element(nameof(Extend.Modo2.SaidaDeUsuario));
         var xNmrCasasDecimaisEnergiaAtiva = xModo2?.Element(nameof(Extend.Modo2.NmrCasasDecimaisEnergia));
-        var xNmrCasasDecimaisDemanda      = xModo2?.Element(nameof(Extend.Modo2.NmrCasasDecimaisDemanda));
+        var xNmrCasasDecimaisDemanda = xModo2?.Element(nameof(Extend.Modo2.NmrCasasDecimaisDemanda));
 
         bool hasAbnt90 = false;
         hasAbnt90 |= xNmrCasasDecimaisEnergiaAtiva is not null;
@@ -568,26 +628,33 @@ public static class XParseCommand
         hasAbnt95 |= xKp is not null;
 
 
-        if (!hasAbnt90 && !hasAbnt95) {
+        if (!hasAbnt90 && !hasAbnt95)
+        {
             return ParseResult.ParseError;
         }
 
         var lst = new List<MeterCommand>();
-        if (hasAbnt90) {
+        if (hasAbnt90)
+        {
             if (AddAbnt90(xNmrCasasDecimaisEnergiaAtiva, xNmrCasasDecimaisDemanda)
-                .TryGetValue(out var abnt90, out var parseResult)) {
+                .TryGetValue(out var abnt90, out var parseResult))
+            {
                 lst.Add(abnt90);
             }
-            else {
+            else
+            {
                 return parseResult;
             }
         }
 
-        if (hasAbnt95) {
-            if (AddAbnt95(xSaidaUsuario, xKp?.ToArray()).TryGetValue(out var abnt95, out var parseResult)) {
+        if (hasAbnt95)
+        {
+            if (AddAbnt95(xSaidaUsuario, xKp?.ToArray()).TryGetValue(out var abnt95, out var parseResult))
+            {
                 lst.Add(abnt95);
             }
-            else {
+            else
+            {
                 return parseResult;
             }
         }
@@ -596,12 +663,14 @@ public static class XParseCommand
             XElement? xCasasDecimaisDemanda)
         {
             if (!XParser.XParse<byte>(xCasasDecimaisEnergiaAtiva)
-                        .TryGetValue(out var nmrCasasDecimaisEnergia, out var parseResult)) {
+                        .TryGetValue(out var nmrCasasDecimaisEnergia, out var parseResult))
+            {
                 return parseResult;
             }
 
             if (!XParser.XParse<byte>(xCasasDecimaisDemanda)
-                        .TryGetValue(out var nmrCasasDecimaisDemanda, out parseResult)) {
+                        .TryGetValue(out var nmrCasasDecimaisDemanda, out parseResult))
+            {
                 return parseResult;
             }
 
@@ -609,7 +678,8 @@ public static class XParseCommand
             var energia = (ModoApresentacao)(nmrCasasDecimaisEnergia << 4) | ModoApresentacao.K_Grandeza;
             var demanda = (ModoApresentacao)(nmrCasasDecimaisDemanda << 4) | ModoApresentacao.K_Grandeza;
 
-            var abnt90 = new Abnt90(0x999990) {
+            var abnt90 = new Abnt90(0x999990)
+            {
                 ModoApresentacaoCanais = new[] { (energia, demanda) }
             };
             return abnt90;
@@ -617,15 +687,18 @@ public static class XParseCommand
 
         static Either<ParseResult, MeterCommand> AddAbnt95(XElement? xSaidaUsuario, IReadOnlyCollection<XElement>? xKp)
         {
-            var abnt95 = new Abnt95(0x999990) {
+            var abnt95 = new Abnt95(0x999990)
+            {
                 Alteracoes = default
             };
-            if (Enum.TryParse<TipoSaidaUsuario>(xSaidaUsuario?.Value, out var saidaUsuario)) {
-                abnt95.TipoSaidaUsuario =  saidaUsuario;
-                abnt95.Alteracoes       |= FlagAlteracaoConstantes.SaidaUsuario;
+            if (Enum.TryParse<TipoSaidaUsuario>(xSaidaUsuario?.Value, out var saidaUsuario))
+            {
+                abnt95.TipoSaidaUsuario = saidaUsuario;
+                abnt95.Alteracoes |= FlagAlteracaoConstantes.SaidaUsuario;
             }
 
-            if (xKp?.Count == 2) {
+            if (xKp?.Count == 2)
+            {
                 var arrKp = xKp
                             .Select(XParser.XParse<int>)
                             .Where(x => x.HasValue)
@@ -633,7 +706,8 @@ public static class XParseCommand
                             .ToArray();
                 abnt95.ConstanteKp = (arrKp[0], arrKp[1]);
             }
-            else {
+            else
+            {
                 abnt95.ConstanteKp = (1, 1);
             }
 
@@ -646,18 +720,18 @@ public static class XParseCommand
     public static Either<ParseResult, AB63> XParseReposicao(XElement element)
     {
         var xReposicao = element.Element(nameof(Extend.Reposicao));
-        var xJaneiro   = xReposicao?.Element(nameof(Extend.Reposicao.Janeiro));
+        var xJaneiro = xReposicao?.Element(nameof(Extend.Reposicao.Janeiro));
         var xFevereiro = xReposicao?.Element(nameof(Extend.Reposicao.Fevereiro));
-        var xMarco     = xReposicao?.Element(nameof(Extend.Reposicao.Marco));
-        var xAbril     = xReposicao?.Element(nameof(Extend.Reposicao.Abril));
-        var xMaio      = xReposicao?.Element(nameof(Extend.Reposicao.Maio));
-        var xJunho     = xReposicao?.Element(nameof(Extend.Reposicao.Junho));
-        var xJulho     = xReposicao?.Element(nameof(Extend.Reposicao.Julho));
-        var xAgosto    = xReposicao?.Element(nameof(Extend.Reposicao.Agosto));
-        var xSetembro  = xReposicao?.Element(nameof(Extend.Reposicao.Setembro));
-        var xOutubro   = xReposicao?.Element(nameof(Extend.Reposicao.Outubro));
-        var xNovembro  = xReposicao?.Element(nameof(Extend.Reposicao.Novembro));
-        var xDezembro  = xReposicao?.Element(nameof(Extend.Reposicao.Dezembro));
+        var xMarco = xReposicao?.Element(nameof(Extend.Reposicao.Marco));
+        var xAbril = xReposicao?.Element(nameof(Extend.Reposicao.Abril));
+        var xMaio = xReposicao?.Element(nameof(Extend.Reposicao.Maio));
+        var xJunho = xReposicao?.Element(nameof(Extend.Reposicao.Junho));
+        var xJulho = xReposicao?.Element(nameof(Extend.Reposicao.Julho));
+        var xAgosto = xReposicao?.Element(nameof(Extend.Reposicao.Agosto));
+        var xSetembro = xReposicao?.Element(nameof(Extend.Reposicao.Setembro));
+        var xOutubro = xReposicao?.Element(nameof(Extend.Reposicao.Outubro));
+        var xNovembro = xReposicao?.Element(nameof(Extend.Reposicao.Novembro));
+        var xDezembro = xReposicao?.Element(nameof(Extend.Reposicao.Dezembro));
 
         bool hasNull = false;
         hasNull |= xJaneiro is null;
@@ -673,7 +747,8 @@ public static class XParseCommand
         hasNull |= xNovembro is null;
         hasNull |= xDezembro is null;
 
-        if (hasNull) {
+        if (hasNull)
+        {
             return ParseResult.ParseError;
         }
 
@@ -686,13 +761,15 @@ public static class XParseCommand
             XParser.XParse<byte>(xDezembro)
         };
 
-        if (!daysOfMonth.All()) {
+        if (!daysOfMonth.All())
+        {
             return ParseResult.ParseError;
         }
 
-        var ab63 = new AB63(0x999990) {
+        var ab63 = new AB63(0x999990)
+        {
             AtivaDesativa = true,
-            CommandMode   = CommandMode.Escrita,
+            CommandMode = CommandMode.Escrita,
             DiasDeReposicao = new (Bcd, Bcd)[] {
                 (Bcd.ToBcd(daysOfMonth[01].Unwrap()), 0x01), (Bcd.ToBcd(daysOfMonth[02].Unwrap()), 0x02),
                 (Bcd.ToBcd(daysOfMonth[03].Unwrap()), 0x03), (Bcd.ToBcd(daysOfMonth[04].Unwrap()), 0x04),

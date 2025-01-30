@@ -1,12 +1,11 @@
 using System.Xml.Linq;
 
-namespace SmGenPar.Test.Unit;
+namespace TestProject1;
 
-[TestClass]
 public class UnitTest1
 {
-    [TestMethod]
-    public void TestMethod1()
+    [Fact]
+    public void Test1()
     {
         var xml = XDocument.Load(@"C:\Users\alessandro.soares\Desktop\a.txt");
     }

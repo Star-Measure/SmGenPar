@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Xml.Linq;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
 using SMResultTypes;
 using SMStructs.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.Xml.Linq;
 
 namespace SmGenPar.Logic.Models;
 
@@ -17,7 +17,7 @@ public class Qee : IXElementParsable<Qee>
 
     [Display(Name = "Tipo de Ligação")]
     public TipoLigacaoQee TipoLigacao { get; set; }
-    
+
     public static Either<ParseResult, Qee> FromXElement(XElement? element)
     {
         var xTensaoNominal = element?.Element("TensaoNominal");
@@ -26,9 +26,10 @@ public class Qee : IXElementParsable<Qee>
         var tensaoNominal = XParser.XParse<float>(xTensaoNominal, CultureInfo.InvariantCulture);
         var tipoLigacao = XParser.XParseEnum<TipoLigacaoQee>(xTipoLigacao);
 
-        var qee = new Qee {
+        var qee = new Qee
+        {
             TensaoNominal = tensaoNominal.GetValueOrDefault(),
-            TipoLigacao   = tipoLigacao.GetValueOrDefault()
+            TipoLigacao = tipoLigacao.GetValueOrDefault()
         };
 
         return qee;

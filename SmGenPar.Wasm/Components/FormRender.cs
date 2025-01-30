@@ -1,21 +1,21 @@
-﻿using System.Collections;
+﻿using JetBrains.Annotations;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using SmGenPar.Logic.Cache;
+using SmGenPar.Logic.Models;
+using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using JetBrains.Annotations;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using SmGenPar.Logic.Models;
-using SmGenPar.Logic.Cache;
 
 namespace SmGenPar.Wasm.Components;
 
 public delegate void FormsRenderer(
-    RenderTreeBuilder       builder,
-    string                  id,
-    string                  name,
+    RenderTreeBuilder builder,
+    string id,
+    string name,
     Action<ChangeEventArgs> callback,
-    params Attribute[]      attributes);
+    params Attribute[] attributes);
 
 [PublicAPI]
 public class FormRender
@@ -24,13 +24,14 @@ public class FormRender
     {
         { "Extend", new Extend() },
     };
-    public readonly Dictionary<string, object>      ElementValue              = new();
-    readonly        Dictionary<Type, FormsRenderer> _customTypeRenderFragment = new();
+    public readonly Dictionary<string, object> ElementValue = new();
+    readonly Dictionary<Type, FormsRenderer> _customTypeRenderFragment = new();
     public RenderFragment RenderModel(object model) => builder =>
     {
         var modelType = model.GetType();
 
-        foreach (var propertyInfo in modelType.GetPropertiesCached()) {
+        foreach (var propertyInfo in modelType.GetPropertiesCached())
+        {
             builder.AddLabelElement(propertyInfo.Name, propertyInfo.Name);
 
             var attributes = propertyInfo.GetCustomAttributes().ToArray();
@@ -56,7 +57,8 @@ public class FormRender
 
         var fragments = new Dictionary<string, RenderFragment>(span.Length);
 
-        foreach (var propertyInfo in span) {
+        foreach (var propertyInfo in span)
+        {
             var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
             var fragment = new RenderFragment(builder =>
             {
@@ -92,22 +94,23 @@ public class FormRender
     }
 
     void OpenInputElement(
-        RenderTreeBuilder        builder,
-        string?                  id,
-        string                   type,
+        RenderTreeBuilder builder,
+        string? id,
+        string type,
         Action<ChangeEventArgs>? callback = null,
-        params Attribute[]       attributes)
+        params Attribute[] attributes)
     {
         var sequence = 0;
         var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
 
-        builder.OpenElement(sequence  += 1, "input");
+        builder.OpenElement(sequence += 1, "input");
         builder.AddAttribute(sequence += 1, "id", id);
         builder.AddAttribute(sequence += 1, "type", type);
         builder.AddAttribute(sequence += 1, "class", "form-control");
         builder.AddAttribute(sequence += 1, "value", ElementValue.GetValueOrDefault(id!));
 
-        if (requiredAttribute is not null) {
+        if (requiredAttribute is not null)
+        {
             builder.AddAttribute(sequence += 1, "required", true);
         }
 
@@ -120,14 +123,14 @@ public class FormRender
     }
 
     void OpenCheckBoxElement(
-        RenderTreeBuilder        builder,
-        string?                  id,
+        RenderTreeBuilder builder,
+        string? id,
         Action<ChangeEventArgs>? callback = null,
-        params Attribute[]       attributes)
+        params Attribute[] attributes)
     {
         var sequence = 0;
 
-        builder.OpenElement(sequence  += 1, "input");
+        builder.OpenElement(sequence += 1, "input");
         builder.AddAttribute(sequence += 1, "id", id);
         builder.AddAttribute(sequence += 1, "type", "checkbox");
 
@@ -140,87 +143,97 @@ public class FormRender
     }
 
     public void RenderElementForType(
-        RenderTreeBuilder       builder,
-        string                  id,
-        Type                    type,
+        RenderTreeBuilder builder,
+        string id,
+        Type type,
         Action<ChangeEventArgs> callback,
-        params Attribute[]      attributes)
+        params Attribute[] attributes)
 
     {
-        if (Nullable.GetUnderlyingType(type) is {} underlyingType) {
+        if (Nullable.GetUnderlyingType(type) is { } underlyingType)
+        {
             type = underlyingType;
         }
         var typeCode = Type.GetTypeCode(type);
         var name = type.Name;
-        if (_customTypeRenderFragment.TryGetValue(type, out var customRenderer)) {
+        if (_customTypeRenderFragment.TryGetValue(type, out var customRenderer))
+        {
             customRenderer(builder, id, name, callback, attributes);
         }
-        else if (type.IsEnum) {
+        else if (type.IsEnum)
+        {
             RenderEnum(builder, id, name, type, callback, attributes);
         }
-        else if (type.IsArray) {
+        else if (type.IsArray)
+        {
             RenderArray(builder, id, type, callback, attributes);
         }
-        else if (type == typeof(DateTime)) {
+        else if (type == typeof(DateTime))
+        {
             OpenInputElement(builder, id, "datetime-local", callback, attributes);
             builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
             builder.CloseElement();
         }
-        else if (type == typeof(DateOnly)) {
+        else if (type == typeof(DateOnly))
+        {
             OpenInputElement(builder, id, "date", callback, attributes);
             builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
             builder.CloseElement();
         }
-        else if (type == typeof(TimeOnly)) {
+        else if (type == typeof(TimeOnly))
+        {
             OpenInputElement(builder, id, "time", callback, attributes);
             builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
             builder.CloseElement();
         }
-        else {
-            switch (typeCode) {
-            case >= TypeCode.SByte and <= TypeCode.UInt64:
-                OpenInputElement(builder, id, "number", callback, attributes);
-                builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
-                builder.CloseElement();
-                break;
-            case >= TypeCode.Single and <= TypeCode.Decimal:
-                OpenInputElement(builder, id, "number", callback, attributes);
-                builder.AddAttribute(09, "step", "any");
-                builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
-                builder.CloseElement();
-                break;
-            case TypeCode.Boolean:
-                OpenCheckBoxElement(builder, id, callback, attributes);
-                builder.CloseElement();
-                break;
-            case TypeCode.String:
-                OpenInputElement(builder, id, "text", callback, attributes);
-                builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
-                builder.CloseElement();
+        else
+        {
+            switch (typeCode)
+            {
+                case >= TypeCode.SByte and <= TypeCode.UInt64:
+                    OpenInputElement(builder, id, "number", callback, attributes);
+                    builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
+                    builder.CloseElement();
+                    break;
+                case >= TypeCode.Single and <= TypeCode.Decimal:
+                    OpenInputElement(builder, id, "number", callback, attributes);
+                    builder.AddAttribute(09, "step", "any");
+                    builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
+                    builder.CloseElement();
+                    break;
+                case TypeCode.Boolean:
+                    OpenCheckBoxElement(builder, id, callback, attributes);
+                    builder.CloseElement();
+                    break;
+                case TypeCode.String:
+                    OpenInputElement(builder, id, "text", callback, attributes);
+                    builder.AddAttribute(10, "value", ElementValue.GetValueOrDefault(id));
+                    builder.CloseElement();
 
-                break;
+                    break;
 
-            case TypeCode.Object:
-                RenderObject(builder, type, id, name, callback, attributes);
+                case TypeCode.Object:
+                    RenderObject(builder, type, id, name, callback, attributes);
 
-                break;
+                    break;
             }
         }
     }
 
     void RenderEnum(
-        RenderTreeBuilder        builder,
-        string                   id,
-        string                   name,
-        Type                     type,
+        RenderTreeBuilder builder,
+        string id,
+        string name,
+        Type type,
         Action<ChangeEventArgs>? callback = null,
-        params Attribute[]       attributes)
+        params Attribute[] attributes)
     {
         var flagsAttribute = type.GetCustomAttribute<FlagsAttribute>();
 
         builder.OpenSelectElement(id, name, callback, attributes);
 
-        foreach (var enumName in Enum.GetNames(type)) {
+        foreach (var enumName in Enum.GetNames(type))
+        {
             builder.AddOptionElement($"{id}.{enumName}", enumName, attributes);
         }
 
@@ -228,17 +241,18 @@ public class FormRender
     }
 
     void RenderArray(
-        RenderTreeBuilder        builder,
-        string                   id,
-        Type                     type,
+        RenderTreeBuilder builder,
+        string id,
+        Type type,
         Action<ChangeEventArgs>? callback = null,
-        params Attribute[]       attributes)
+        params Attribute[] attributes)
     {
         var array = ElementValue.GetValueOrDefault(id) as IList;
         var elementType = type.GetElementType() ?? typeof(object);
         var lenghtAttribute = attributes.OfType<Logic.Models.LengthAttribute>().FirstOrDefault();
 
-        for (var i = 0; i < lenghtAttribute?.Lenght; ++i) {
+        for (var i = 0; i < lenghtAttribute?.Lenght; ++i)
+        {
             var index = i;
             RenderElementForType(builder, $"{id}[{i}]", elementType, args =>
             {
@@ -249,15 +263,19 @@ public class FormRender
                 var argValue = args.Value;
                 var argType = argValue?.GetType()!;
 
-                if (converter.CanConvertFrom(argType)) {
-                    try {
+                if (converter.CanConvertFrom(argType))
+                {
+                    try
+                    {
                         array[index] = converter.ConvertFrom(argValue!);
                     }
-                    catch (FormatException) {
+                    catch (FormatException)
+                    {
                         return;
                     }
                 }
-                else {
+                else
+                {
                     array[index] = args.Value!;
                 }
 
@@ -270,17 +288,18 @@ public class FormRender
     }
 
     void RenderObject(
-        RenderTreeBuilder        builder,
-        Type                     type,
-        string                   id,
-        string                   name,
+        RenderTreeBuilder builder,
+        Type type,
+        string id,
+        string name,
         Action<ChangeEventArgs>? callback = null,
-        params Attribute[]       attributes)
+        params Attribute[] attributes)
     {
         var instance = ElementValue.GetValueOrDefault(id);
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "form-control");
-        foreach (var propertyInfo in type.GetPropertiesCached()) {
+        foreach (var propertyInfo in type.GetPropertiesCached())
+        {
             var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
             var displayName = displayAttribute?.Name ?? propertyInfo.Name;
             builder.OpenElement(0, "div");
@@ -297,16 +316,20 @@ public class FormRender
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
                     var argValue = args.Value!;
                     var argType = argValue!.GetType();
-                    if (converter.CanConvertFrom(argType)) {
-                        try {
+                    if (converter.CanConvertFrom(argType))
+                    {
+                        try
+                        {
                             var convertedValue = converter.ConvertFromInvariantString((string)argValue);
                             propertyInfo.SetValue(instance, convertedValue);
                         }
-                        catch (FormatException) {
+                        catch (FormatException)
+                        {
                             return;
                         }
                     }
-                    else {
+                    else
+                    {
                         propertyInfo.SetValue(instance, args.Value);
                     }
                     callback?.Invoke(new ChangeEventArgs

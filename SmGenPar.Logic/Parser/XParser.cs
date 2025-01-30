@@ -1,19 +1,22 @@
-﻿using System.Globalization;
-using System.Xml.Linq;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SMResultTypes;
+using System.Globalization;
+using System.Xml.Linq;
 
 namespace SmGenPar.Logic.Parser;
 
-[PublicAPI] public static class XParser
+[PublicAPI]
+public static class XParser
 {
     public static CultureInfo BrazilianCultureInfo { get; } = new("pt-BR");
-    
+
     public static Either<ParseResult, TParsable?> XParseNullable<TParsable>(XElement? xElement)
         where TParsable : struct, IParsable<TParsable>
     {
-        if (xElement is { IsEmpty: false } ponta) {
-            if (TParsable.TryParse(ponta.Value, null, out var value)) {
+        if (xElement is { IsEmpty: false } ponta)
+        {
+            if (TParsable.TryParse(ponta.Value, null, out var value))
+            {
                 return value;
             }
             return ParseResult.ParseError;
@@ -25,8 +28,10 @@ namespace SmGenPar.Logic.Parser;
         IFormatProvider? formatProvider)
         where TParsable : IParsable<TParsable>
     {
-        if (xElement is { IsEmpty: false } ponta) {
-            if (TParsable.TryParse(ponta.Value, formatProvider, out var value)) {
+        if (xElement is { IsEmpty: false } ponta)
+        {
+            if (TParsable.TryParse(ponta.Value, formatProvider, out var value))
+            {
                 return value;
             }
             return ParseResult.ParseError;
@@ -39,8 +44,10 @@ namespace SmGenPar.Logic.Parser;
         XElement? xElement)
         where TParsable : struct, Enum
     {
-        if (xElement is { IsEmpty: false } ponta) {
-            if (Enum.TryParse<TParsable>(ponta.Value, out var value)) {
+        if (xElement is { IsEmpty: false } ponta)
+        {
+            if (Enum.TryParse<TParsable>(ponta.Value, out var value))
+            {
                 return value;
             }
             return ParseResult.ParseError;
@@ -53,12 +60,15 @@ namespace SmGenPar.Logic.Parser;
         Span<TParsable> values)
         where TParsable : IParsable<TParsable>
     {
-        for (var i = 0; i < xElements.Length; ++i) {
+        for (var i = 0; i < xElements.Length; ++i)
+        {
             var c = xElements[i];
-            if (TParsable.TryParse(c.Value, null, out var value)) {
+            if (TParsable.TryParse(c.Value, null, out var value))
+            {
                 values[i] = value;
             }
-            else {
+            else
+            {
                 return ParseResult.ParseError;
             }
         }
@@ -69,12 +79,15 @@ namespace SmGenPar.Logic.Parser;
         Span<TParsable?> values)
         where TParsable : struct, IParsable<TParsable>
     {
-        for (var i = 0; i < xElements.Length; ++i) {
+        for (var i = 0; i < xElements.Length; ++i)
+        {
             var c = xElements[i];
-            if (TParsable.TryParse(c.Value, null, out var value)) {
+            if (TParsable.TryParse(c.Value, null, out var value))
+            {
                 values[i] = value;
             }
-            else {
+            else
+            {
                 return ParseResult.ParseError;
             }
         }

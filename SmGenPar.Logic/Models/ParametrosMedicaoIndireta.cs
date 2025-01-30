@@ -1,8 +1,8 @@
-﻿using System.Xml.Linq;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
 using SMResultTypes;
 using SMStructs.Enums;
+using System.Xml.Linq;
 
 namespace SmGenPar.Logic.Models;
 
@@ -10,7 +10,7 @@ namespace SmGenPar.Logic.Models;
 public record ParametrosMedicaoIndireta : IXElementParsable<ParametrosMedicaoIndireta>
 {
     public TipoSaidaUsuario SaidaDeUsuario { get; set; }
-    
+
     [Length(2)]
     public int?[]? Kp { get; set; }
 
@@ -31,14 +31,15 @@ public record ParametrosMedicaoIndireta : IXElementParsable<ParametrosMedicaoInd
 
         var nmrCasasDecimaisEnergia = XParser.XParse<int>(xNmrCasasDecimaisEnergia);
         var nmrCasasDecimaisDemanda = XParser.XParse<int>(xNmrCasasDecimaisDemanda);
-        
-        var parametrosMedicaoIndireta = new ParametrosMedicaoIndireta {
-            Kp                      = kp,
-            SaidaDeUsuario          = saidaDeUsuario.GetValueOrDefault(),
+
+        var parametrosMedicaoIndireta = new ParametrosMedicaoIndireta
+        {
+            Kp = kp,
+            SaidaDeUsuario = saidaDeUsuario.GetValueOrDefault(),
             NmrCasasDecimaisEnergia = nmrCasasDecimaisEnergia.GetValueOrDefault(),
             NmrCasasDecimaisDemanda = nmrCasasDecimaisDemanda.GetValueOrDefault()
         };
-        
+
         return parametrosMedicaoIndireta;
     }
 }

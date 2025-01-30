@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
 using SMResultTypes;
+using System.ComponentModel.DataAnnotations;
+using System.Xml.Linq;
 
 namespace SmGenPar.Logic.Models;
 
@@ -10,14 +10,14 @@ namespace SmGenPar.Logic.Models;
 public record PostosHorarios : IXElementParsable<PostosHorarios>
 {
     public DateOnly? DataDeInicio { get; set; }
-    public Posto?    Domingo      { get; set; }
-    public Posto?    Segunda      { get; set; }
-    public Posto?    Terca        { get; set; }
-    public Posto?    Quarta       { get; set; }
-    public Posto?    Quinta       { get; set; }
-    public Posto?    Sexta        { get; set; }
-    public Posto?    Sabado       { get; set; }
-    public Posto?    Feriado      { get; set; }
+    public Posto? Domingo { get; set; }
+    public Posto? Segunda { get; set; }
+    public Posto? Terca { get; set; }
+    public Posto? Quarta { get; set; }
+    public Posto? Quinta { get; set; }
+    public Posto? Sexta { get; set; }
+    public Posto? Sabado { get; set; }
+    public Posto? Feriado { get; set; }
 
     public static Either<ParseResult, PostosHorarios> FromXElement(XElement? element)
     {
@@ -39,14 +39,15 @@ public record PostosHorarios : IXElementParsable<PostosHorarios>
         var sabado = Posto.FromXElement(xSabado);
         var feriado = Posto.FromXElement(xFeriado);
 
-        var postosHorarios = new PostosHorarios {
+        var postosHorarios = new PostosHorarios
+        {
             Domingo = domingo.GetValueOrDefault(),
             Segunda = segunda.GetValueOrDefault(),
-            Terca   = terca.GetValueOrDefault(),
-            Quarta  = quarta.GetValueOrDefault(),
-            Quinta  = quinta.GetValueOrDefault(),
-            Sexta   = sexta.GetValueOrDefault(),
-            Sabado  = sabado.GetValueOrDefault(),
+            Terca = terca.GetValueOrDefault(),
+            Quarta = quarta.GetValueOrDefault(),
+            Quinta = quinta.GetValueOrDefault(),
+            Sexta = sexta.GetValueOrDefault(),
+            Sabado = sabado.GetValueOrDefault(),
             Feriado = feriado.GetValueOrDefault()
         };
 
@@ -82,10 +83,11 @@ public record Posto : IXElementParsable<Posto>
         XParser.XParseNullable<TimeOnly>(xReservado, arrReservado);
         XParser.XParseNullable<TimeOnly>(xIntermediario, arrIntermediario);
 
-        var posto = new Posto {
-            Ponta         = arrPonta,
-            ForaPonta     = arrForaPonta,
-            Reservado     = arrReservado,
+        var posto = new Posto
+        {
+            Ponta = arrPonta,
+            ForaPonta = arrForaPonta,
+            Reservado = arrReservado,
             Intermediario = arrIntermediario
         };
 

@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
 using SMStructs;
+using System.ComponentModel.DataAnnotations;
 
 namespace SmGenPar.Logic.Models;
 
@@ -25,7 +25,7 @@ public record Extend : IXElementParsable<Extend>
     [Display(Name = "Horario de Verao")]
     [Length(15)]
     public Periodo?[]? HorarioDeVerao { get; set; }
-    
+
     public ReposicaoDemanda? Reposicao { get; set; }
 
     [Display(Name = "QEE")]

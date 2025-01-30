@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
-using System.Xml.Serialization;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using SmGenPar.Logic.Parser;
 using SMResultTypes;
+using System.ComponentModel.DataAnnotations;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace SmGenPar.Logic.Models;
 
@@ -16,9 +16,10 @@ public record HorariosDeVerao
     [Length(15)]
     public Periodo[]? Periodos { get; set; }
 
-    public static Either<ParseResult,HorariosDeVerao> FromXElement(XElement? element)
+    public static Either<ParseResult, HorariosDeVerao> FromXElement(XElement? element)
     {
-        var horariosDeVerao = new HorariosDeVerao {
+        var horariosDeVerao = new HorariosDeVerao
+        {
             Periodos = element?.Elements("Periodo")
                 .Select(Periodo.FromXElement)
                 .Where(periodo => periodo.HasValue)
@@ -29,10 +30,10 @@ public record HorariosDeVerao
     }
 }
 [PublicAPI]
-public record struct Periodo 
+public record struct Periodo
 {
     public DateOnly? Inicio { get; set; }
-    public DateOnly? Fim    { get; set; }
+    public DateOnly? Fim { get; set; }
 
     public static Option<Periodo> FromXElement(XElement element)
     {
@@ -44,13 +45,15 @@ public record struct Periodo
         success &= DateOnly.TryParse(xInicio?.Value, out var inicio);
         success &= DateOnly.TryParse(xFim?.Value, out var fim);
 
-        if (!success) {
+        if (!success)
+        {
             return Option.None;
         }
 
-        var periodo = new Periodo {
+        var periodo = new Periodo
+        {
             Inicio = inicio,
-            Fim    = fim
+            Fim = fim
         };
         return periodo;
     }
